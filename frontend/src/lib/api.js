@@ -2,21 +2,30 @@ import { supabase } from './supabaseClient';
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
-async function getHeaders() {
+async function getToken() {
+  // Primary: read the cached session (no network round-trip)
   const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
+  if (session?.access_token) return session.access_token;
+
+  // Fallback: session missing from storage (e.g. after OAuth redirect or
+  // hard reload before Supabase has written to localStorage) — force a
+  // server-side refresh to recover it.
+  const { data: { session: refreshed } } = await supabase.auth.refreshSession();
+  return refreshed?.access_token ?? null;
 }
 
 async function request(method, path, body) {
-  const headers = await getHeaders();
+  const token = await getToken();
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    ...(body && { body: JSON.stringify(body) }),
+    ...(body !== undefined && { body: JSON.stringify(body) }),
   });
 
   const json = await res.json().catch(() => ({ error: res.statusText }));
