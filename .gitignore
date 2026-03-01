@@ -29,6 +29,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# ── Claude Code (editor metadata) ────────────────────────────
+.claude/
+
 # ── Misc ──────────────────────────────────────────────────────
 *.local
 .cache/
