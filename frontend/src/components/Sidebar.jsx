@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
-  { to: '/',          icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard'  },
   { to: '/bills',     icon: Receipt,          label: 'Bills'       },
   { to: '/payments',  icon: CreditCard,       label: 'Payments'   },
   { to: '/savings',   icon: PiggyBank,        label: 'Savings'    },

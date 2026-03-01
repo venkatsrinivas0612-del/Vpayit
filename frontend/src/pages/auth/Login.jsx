@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Building2, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+const DEMO_EMAIL    = 'aalexandramatt@gmail.com';
+const DEMO_PASSWORD = 'demo123';
 
 export default function Login() {
   const { signIn } = useAuth();
   const navigate   = useNavigate();
   const location   = useLocation();
-  const from       = location.state?.from?.pathname || '/';
+  const from       = location.state?.from?.pathname || '/dashboard';
 
-  const [form, setForm]     = useState({ email: '', password: '' });
-  const [error, setError]   = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showPwd, setShowPwd] = useState(false);
+  const [form, setForm]         = useState({ email: '', password: '' });
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [showPwd, setShowPwd]   = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -27,6 +31,19 @@ export default function Login() {
       setError(err.message || 'Sign-in failed. Please check your credentials.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDemo() {
+    setError('');
+    setDemoLoading(true);
+    try {
+      await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+      navigate('/dashboard', { replace: true });
+    } catch {
+      setError('Demo account unavailable — please try again shortly.');
+    } finally {
+      setDemoLoading(false);
     }
   }
 
@@ -116,7 +133,26 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
+        {/* Demo access */}
+        <div className="mt-4 bg-white/10 backdrop-blur rounded-2xl border border-white/20 p-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Sparkles className="w-4 h-4 text-blue-300" />
+            <p className="text-sm font-semibold text-white">Want to explore first?</p>
+          </div>
+          <p className="text-xs text-slate-400 mb-3">
+            Try the live demo with pre-loaded UK business data.
+          </p>
+          <button
+            onClick={handleDemo}
+            disabled={demoLoading}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-blue-400/50 bg-blue-600/20 hover:bg-blue-600/40 text-blue-200 hover:text-white text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {demoLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {demoLoading ? 'Loading demo…' : '▶  View live demo'}
+          </button>
+        </div>
+
+        <p className="text-center text-xs text-slate-500 mt-4">
           FCA-regulated Open Banking · TrueLayer · Supabase
         </p>
       </div>
