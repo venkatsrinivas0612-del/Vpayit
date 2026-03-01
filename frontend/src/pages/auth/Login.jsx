@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Building2, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const DEMO_EMAIL    = 'aalexandramatt@gmail.com';
+const DEMO_EMAIL    = 'demo@vpayit.co.uk';
 const DEMO_PASSWORD = 'demo123';
 
 export default function Login() {

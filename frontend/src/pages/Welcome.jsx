@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Building2, Loader2, BarChart3, Receipt, PiggyBank, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const DEMO_EMAIL    = 'aalexandramatt@gmail.com';
+const DEMO_EMAIL    = 'demo@vpayit.co.uk';
 const DEMO_PASSWORD = 'demo123';
 
 const FEATURES = [
