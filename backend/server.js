@@ -16,7 +16,10 @@ app.use(helmet());
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.FRONTEND_URL,          // e.g. https://app.vpayit.co.uk
+  'https://app.vpayit.co.uk',
+  'https://vpayit.co.uk',
+  'https://moonlit-gelato-dd1708.netlify.app',
+  process.env.FRONTEND_URL,          // additional origin from env if needed
 ].filter(Boolean);
 
 app.use(cors({
