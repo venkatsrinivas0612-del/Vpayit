@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Loader2, RefreshCw, Filter, TrendingUp, TrendingDown, Receipt } from 'lucide-react';
+import { useEffect, useState, Fragment } from 'react';
+import {
+  Loader2, RefreshCw, Filter, TrendingUp, TrendingDown, Receipt,
+  ChevronDown, ChevronUp,
+} from 'lucide-react';
 import { api } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 
 const fmt = (n) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n ?? 0);
@@ -16,10 +20,16 @@ const CATEGORY_LABELS = {
   postage:            'Postage',
   payment_processing: 'Payment Processing',
   compliance:         'Compliance',
+  rent:               'Rent',
+  mortgage:           'Mortgage',
+  waste:              'Waste',
   unknown:            'Other',
 };
 
-const FREQ_LABELS = { monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual', weekly: 'Weekly', irregular: 'Irregular' };
+const FREQ_LABELS = {
+  monthly: 'Monthly', quarterly: 'Quarterly',
+  annual: 'Annual', weekly: 'Weekly', irregular: 'Irregular',
+};
 
 const CATEGORY_COLOURS = {
   energy:   'bg-orange-100 text-orange-700',
@@ -28,6 +38,8 @@ const CATEGORY_COLOURS = {
   insurance:'bg-green-100 text-green-700',
   software: 'bg-indigo-100 text-indigo-700',
   rates:    'bg-red-100 text-red-700',
+  rent:     'bg-amber-100 text-amber-700',
+  waste:    'bg-lime-100 text-lime-700',
   default:  'bg-slate-100 text-slate-600',
 };
 
@@ -40,12 +52,76 @@ function Badge({ category }) {
   );
 }
 
+// Groups transactions by month → { "Nov 2024": 328.00, ... }
+function groupByMonth(txns) {
+  return txns.reduce((acc, t) => {
+    const key = new Date(t.date).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    acc[key] = (acc[key] || 0) + Math.abs(t.amount ?? 0);
+    return acc;
+  }, {});
+}
+
+function BillHistory({ bill, allTxns, loading }) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-2 text-slate-400 text-sm">
+        <Loader2 className="w-4 h-4 animate-spin" /> Loading payment history…
+      </div>
+    );
+  }
+
+  const history = allTxns
+    ? allTxns.filter(t =>
+        bill.supplier?.name
+          ? t.supplier?.name === bill.supplier.name
+          : t.bill_category === bill.category && !t.supplier?.name
+      )
+    : [];
+
+  const grouped = groupByMonth(history);
+  const entries = Object.entries(grouped).slice(-6).reverse();
+
+  if (entries.length === 0) {
+    return (
+      <p className="text-xs text-slate-400 py-2">
+        No recent payment history found.
+        {bill.current_amount && (
+          <span> Current amount: <strong>{fmt(bill.current_amount)}</strong></span>
+        )}
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+        Payment history
+      </p>
+      <div className="flex gap-4 flex-wrap">
+        {entries.map(([month, total]) => (
+          <div key={month} className="text-center">
+            <p className="text-xs text-slate-400">{month}</p>
+            <p className="text-sm font-semibold text-slate-800">{fmt(total)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Bills() {
-  const [bills, setBills]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [detecting, setDetect]  = useState(false);
-  const [category, setCategory] = useState('');
-  const [msg, setMsg]           = useState('');
+  const { addToast } = useToast();
+  const [bills, setBills]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [detecting, setDetect]    = useState(false);
+  const [category, setCategory]   = useState('');
+  const [msg, setMsg]             = useState('');
+  const [expandedId, setExpandedId] = useState(null);
+  const [allBillTxns, setAllBillTxns] = useState(null); // null = not yet loaded
+  const [txnsLoading, setTxnsLoading] = useState(false);
+
+  useEffect(() => { document.title = 'Bills | Vpayit'; }, []);
+  useEffect(() => { load(category); }, [category]);
 
   async function load(cat) {
     setLoading(true);
@@ -53,25 +129,49 @@ export default function Bills() {
       const params = { status: 'active', ...(cat && { category: cat }) };
       const res = await api.bills.list(params);
       setBills(res.data ?? []);
-    } catch { /* no-op */ }
-    finally { setLoading(false); }
+    } catch (err) {
+      addToast(`Failed to load bills: ${err.message}`, 'error');
+    } finally { setLoading(false); }
   }
-
-  useEffect(() => { document.title = 'Bills | Vpayit'; }, []);
-  useEffect(() => { load(category); }, [category]);
 
   async function runDetect() {
     setDetect(true);
     setMsg('');
     try {
       const res = await api.bills.detect();
-      setMsg(`Detection complete — ${res.data.detected} recurring bills found, ${res.data.created} new records created.`);
+      const msg = `Detection complete — ${res.data.detected} recurring bills found, ${res.data.created} new records created.`;
+      setMsg(msg);
       await load(category);
+      // Reset cached transactions so history refreshes
+      setAllBillTxns(null);
     } catch (err) {
       setMsg(`Error: ${err.message}`);
+      addToast(`Detect bills failed: ${err.message}`, 'error');
     } finally {
       setDetect(false);
     }
+  }
+
+  async function loadAllBillTxns() {
+    if (allBillTxns !== null) return; // already loaded
+    setTxnsLoading(true);
+    try {
+      const res = await api.transactions.list({ is_bill: true, limit: 200 });
+      setAllBillTxns(res.data ?? []);
+    } catch {
+      setAllBillTxns([]);
+    } finally {
+      setTxnsLoading(false);
+    }
+  }
+
+  async function toggleExpand(bill) {
+    if (expandedId === bill.id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(bill.id);
+    await loadAllBillTxns();
   }
 
   const totalMonthly = bills.reduce((s, b) => {
@@ -82,7 +182,7 @@ export default function Bills() {
   }, 0);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Bills</h1>
@@ -91,7 +191,7 @@ export default function Bills() {
         <button
           onClick={runDetect}
           disabled={detecting}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors cursor-pointer"
         >
           {detecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           {detecting ? 'Detecting…' : 'Detect bills'}
@@ -105,10 +205,10 @@ export default function Bills() {
       )}
 
       {/* Summary strip */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: 'Active bills',     value: bills.length },
-          { label: 'Monthly est.',     value: fmt(totalMonthly) },
+          { label: 'Active bills',      value: bills.length },
+          { label: 'Monthly est.',      value: fmt(totalMonthly) },
           { label: 'Savings available', value: bills.filter(b => b.savings_available).length },
         ].map(({ label, value }) => (
           <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
@@ -120,11 +220,11 @@ export default function Bills() {
 
       {/* Filter */}
       <div className="flex items-center gap-3 mb-4">
-        <Filter className="w-4 h-4 text-slate-400" />
+        <Filter className="w-4 h-4 text-slate-400 shrink-0" />
         <select
           value={category}
           onChange={e => setCategory(e.target.value)}
-          className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer"
         >
           <option value="">All categories</option>
           {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
@@ -133,8 +233,8 @@ export default function Bills() {
         </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      {/* ── Table — visible on md+ ── */}
+      <div className="hidden md:block bg-white rounded-xl border border-slate-200 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-48">
             <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
@@ -149,7 +249,7 @@ export default function Bills() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                {['Supplier', 'Category', 'Frequency', 'Current', 'Change', 'Next due', 'Status'].map(h => (
+                {['', 'Supplier', 'Category', 'Frequency', 'Current', 'Change', 'Next due', 'Status'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                     {h}
                   </th>
@@ -162,44 +262,154 @@ export default function Bills() {
                   ? ((bill.current_amount - bill.previous_amount) / bill.previous_amount) * 100
                   : null;
                 const isUp = change > 0;
+                const isExpanded = expandedId === bill.id;
+
                 return (
-                  <tr key={bill.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      {bill.supplier?.name || '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge category={bill.category} />
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {FREQ_LABELS[bill.frequency] || bill.frequency || '—'}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-slate-900">
-                      {fmt(bill.current_amount)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {change !== null ? (
-                        <span className={`flex items-center gap-1 ${isUp ? 'text-red-600' : 'text-green-600'}`}>
-                          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          {Math.abs(change).toFixed(1)}%
+                  <Fragment key={bill.id}>
+                    <tr
+                      onClick={() => toggleExpand(bill)}
+                      className="border-b border-slate-50 hover:bg-slate-50/70 transition-colors cursor-pointer"
+                    >
+                      <td className="px-3 py-3 text-slate-400">
+                        {isExpanded
+                          ? <ChevronUp className="w-4 h-4" />
+                          : <ChevronDown className="w-4 h-4" />}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {bill.supplier?.name || '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge category={bill.category} />
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {FREQ_LABELS[bill.frequency] || bill.frequency || '—'}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">
+                        {fmt(bill.current_amount)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {change !== null ? (
+                          <span className={`flex items-center gap-1 ${isUp ? 'text-red-600' : 'text-green-600'}`}>
+                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {Math.abs(change).toFixed(1)}%
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {bill.next_due_date
+                          ? new Date(bill.next_due_date).toLocaleDateString('en-GB')
+                          : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium
+                          ${bill.savings_available ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {bill.savings_available ? '💡 Savings' : 'Active'}
                         </span>
-                      ) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {bill.next_due_date
-                        ? new Date(bill.next_due_date).toLocaleDateString('en-GB')
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                        ${bill.savings_available ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {bill.savings_available ? '💡 Savings' : 'Active'}
-                      </span>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+
+                    {/* Expanded history row */}
+                    {isExpanded && (
+                      <tr className="bg-slate-50">
+                        <td colSpan={8} className="px-8 py-4 border-b border-slate-100">
+                          <BillHistory
+                            bill={bill}
+                            allTxns={allBillTxns}
+                            loading={txnsLoading}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
           </table>
+        )}
+      </div>
+
+      {/* ── Card layout — visible on mobile only ── */}
+      <div className="md:hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+          </div>
+        ) : bills.length === 0 ? (
+          <div className="text-center py-16 text-slate-400">
+            <Receipt className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            <p className="font-medium">No bills detected yet</p>
+            <p className="text-sm mt-1">Connect your bank and click "Detect bills" to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {bills.map((bill) => {
+              const change = bill.previous_amount
+                ? ((bill.current_amount - bill.previous_amount) / bill.previous_amount) * 100
+                : null;
+              const isUp = change > 0;
+              const isExpanded = expandedId === bill.id;
+
+              return (
+                <div
+                  key={bill.id}
+                  className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                >
+                  <div
+                    className="p-4 cursor-pointer"
+                    onClick={() => toggleExpand(bill)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-900 truncate">
+                          {bill.supplier?.name || '—'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <Badge category={bill.category} />
+                          <span className="text-xs text-slate-400">
+                            {FREQ_LABELS[bill.frequency] || bill.frequency}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-slate-900">{fmt(bill.current_amount)}</p>
+                        {change !== null && (
+                          <p className={`text-xs flex items-center justify-end gap-0.5 ${isUp ? 'text-red-600' : 'text-green-600'}`}>
+                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {Math.abs(change).toFixed(1)}%
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                        {bill.next_due_date && (
+                          <span>Due {new Date(bill.next_due_date).toLocaleDateString('en-GB')}</span>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full font-medium
+                          ${bill.savings_available ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {bill.savings_available ? '💡 Savings' : 'Active'}
+                        </span>
+                      </div>
+                      {isExpanded
+                        ? <ChevronUp className="w-4 h-4 text-slate-400" />
+                        : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="px-4 pb-4 border-t border-slate-100 pt-3 bg-slate-50">
+                      <BillHistory
+                        bill={bill}
+                        allTxns={allBillTxns}
+                        loading={txnsLoading}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

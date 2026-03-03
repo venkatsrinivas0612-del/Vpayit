@@ -145,7 +145,7 @@ export default function Dashboard() {
   const noBanks = !loading && banks.length === 0;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
