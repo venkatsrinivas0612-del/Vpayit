@@ -19,6 +19,8 @@ export default function Welcome() {
   const [demoLoading, setDemoLoading] = useState(false);
   const [demoError,   setDemoError]   = useState('');
 
+  useEffect(() => { document.title = 'Vpayit — Smart bill management for UK businesses'; }, []);
+
   // Already logged in → go straight to dashboard
   useEffect(() => {
     if (user) navigate('/dashboard', { replace: true });

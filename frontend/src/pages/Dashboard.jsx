@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Receipt, TrendingDown, Building, AlertCircle,
   RefreshCw, ArrowRight, Plus, Loader2, CheckCircle2, X,
+  Zap, Sparkles, CreditCard, ArrowUpRight, BarChart3,
 } from 'lucide-react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -25,6 +26,13 @@ const CATEGORY_COLOURS = {
   waste:     '#84cc16',
   unknown:   '#94a3b8',
 };
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 function StatCard({ icon: Icon, label, value, sub, colour = 'blue', loading }) {
   const colours = {
@@ -52,33 +60,67 @@ function StatCard({ icon: Icon, label, value, sub, colour = 'blue', loading }) {
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [summary, setSummary]   = useState(null);
-  const [bills, setBills]       = useState([]);
-  const [savings, setSavings]   = useState(null);
-  const [banks, setBanks]       = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [summary, setSummary]           = useState(null);
+  const [bills, setBills]               = useState([]);
+  const [savings, setSavings]           = useState(null);
+  const [banks, setBanks]               = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [detecting, setDetecting]       = useState(false);
+  const [generating, setGenerating]     = useState(false);
+  const [actionMsg, setActionMsg]       = useState('');
   const justConnected = searchParams.get('connected') === '1';
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const [sumRes, billsRes, savRes, bankRes] = await Promise.allSettled([
-          api.transactions.summary(),
-          api.bills.list({ status: 'active' }),
-          api.savings.list(),
-          api.banks.list(),
-        ]);
-        if (sumRes.status   === 'fulfilled') setSummary(sumRes.value.data);
-        if (billsRes.status === 'fulfilled') setBills(billsRes.value.data ?? []);
-        if (savRes.status   === 'fulfilled') setSavings(savRes.value);
-        if (bankRes.status  === 'fulfilled') setBanks(bankRes.value.data ?? []);
-      } catch { /* no-op */ }
-      finally { setLoading(false); }
-    }
+    document.title = 'Dashboard | Vpayit';
     load();
   }, []);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const [sumRes, billsRes, savRes, bankRes, txnRes] = await Promise.allSettled([
+        api.transactions.summary(),
+        api.bills.list({ status: 'active' }),
+        api.savings.list(),
+        api.banks.list(),
+        api.transactions.list({ limit: 5 }),
+      ]);
+      if (sumRes.status   === 'fulfilled') setSummary(sumRes.value.data);
+      if (billsRes.status === 'fulfilled') setBills(billsRes.value.data ?? []);
+      if (savRes.status   === 'fulfilled') setSavings(savRes.value);
+      if (bankRes.status  === 'fulfilled') setBanks(bankRes.value.data ?? []);
+      if (txnRes.status   === 'fulfilled') setTransactions(txnRes.value.data ?? []);
+    } catch { /* no-op */ }
+    finally { setLoading(false); }
+  }
+
+  async function handleDetect() {
+    setDetecting(true);
+    setActionMsg('');
+    try {
+      const res = await api.bills.detect();
+      setActionMsg(`✓ ${res.data.detected} recurring bills found, ${res.data.created} new records created.`);
+      const billsRes = await api.bills.list({ status: 'active' });
+      setBills(billsRes.data ?? []);
+    } catch (err) {
+      setActionMsg(`Error: ${err.message}`);
+    } finally { setDetecting(false); }
+  }
+
+  async function handleFindSavings() {
+    setGenerating(true);
+    setActionMsg('');
+    try {
+      const res = await api.savings.generate();
+      setActionMsg(`✓ ${res.meta.generated} savings opportunities found.`);
+      navigate('/savings');
+    } catch (err) {
+      setActionMsg(`Error: ${err.message}`);
+    } finally { setGenerating(false); }
+  }
 
   const categoryData = summary?.byCategory
     ? Object.entries(summary.byCategory).map(([name, value]) => ({
@@ -108,7 +150,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Good morning{profile?.business_name ? `, ${profile.business_name}` : ''}
+            {getGreeting()}{profile?.business_name ? `, ${profile.business_name}` : ''}
           </h1>
           <p className="text-slate-500 text-sm mt-0.5">
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
@@ -199,6 +241,48 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Quick actions */}
+      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-5">
+        <h2 className="font-semibold text-slate-900 mb-3">Quick actions</h2>
+        {actionMsg && (
+          <p className={`mb-3 text-sm px-3 py-2 rounded-lg ${
+            actionMsg.startsWith('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+          }`}>
+            {actionMsg}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleDetect}
+            disabled={detecting}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm rounded-lg transition-colors disabled:opacity-60"
+          >
+            {detecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {detecting ? 'Detecting…' : 'Detect bills'}
+          </button>
+          <button
+            onClick={handleFindSavings}
+            disabled={generating}
+            className="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-sm rounded-lg transition-colors disabled:opacity-60"
+          >
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {generating ? 'Finding…' : 'Find savings'}
+          </button>
+          <Link
+            to="/payments"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-sm rounded-lg transition-colors"
+          >
+            <CreditCard className="w-4 h-4" /> View payments
+          </Link>
+          <Link
+            to="/reports"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-sm rounded-lg transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" /> View reports
+          </Link>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Spending by category */}
         <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
@@ -234,51 +318,96 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Upcoming bills */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-slate-900">Upcoming bills</h2>
-            <Link to="/bills" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
-            </Link>
+        {/* Right column: Upcoming bills + Recent transactions */}
+        <div className="space-y-6">
+          {/* Upcoming bills */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-900">Upcoming bills</h2>
+              <Link to="/bills" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                View all <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="space-y-3">
+                {[1,2,3].map(i => (
+                  <div key={i} className="h-12 bg-slate-50 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : upcomingBills.length ? (
+              <div className="space-y-2">
+                {upcomingBills.map(bill => {
+                  const daysUntil = Math.ceil(
+                    (new Date(bill.next_due_date) - new Date()) / 86_400_000
+                  );
+                  const isUrgent = daysUntil <= 3;
+                  return (
+                    <div
+                      key={bill.id}
+                      className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">
+                          {bill.supplier?.name || bill.category}
+                        </p>
+                        <p className={`text-xs ${isUrgent ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
+                          {daysUntil <= 0 ? 'Due today' : `${daysUntil}d`}
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold text-slate-900 shrink-0 ml-2">
+                        {fmt(bill.current_amount)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 py-6 text-center">No upcoming bills detected.</p>
+            )}
           </div>
 
-          {loading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="h-12 bg-slate-50 rounded-lg animate-pulse" />
-              ))}
+          {/* Recent transactions */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-slate-900">Recent transactions</h2>
+              <Link to="/payments" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                View all <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
-          ) : upcomingBills.length ? (
-            <div className="space-y-2">
-              {upcomingBills.map(bill => {
-                const daysUntil = Math.ceil(
-                  (new Date(bill.next_due_date) - new Date()) / 86_400_000
-                );
-                const isUrgent = daysUntil <= 3;
-                return (
+
+            {loading ? (
+              <div className="space-y-3">
+                {[1,2,3].map(i => (
+                  <div key={i} className="h-10 bg-slate-50 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : transactions.length ? (
+              <div className="space-y-2">
+                {transactions.slice(0, 5).map(txn => (
                   <div
-                    key={bill.id}
-                    className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0"
+                    key={txn.id}
+                    className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">
-                        {bill.supplier?.name || bill.category}
-                      </p>
-                      <p className={`text-xs ${isUrgent ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
-                        {daysUntil <= 0 ? 'Due today' : `${daysUntil}d`}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-800 truncate">{txn.description}</p>
+                      <p className="text-xs text-slate-400">
+                        {new Date(txn.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-slate-900 shrink-0 ml-2">
-                      {fmt(bill.current_amount)}
+                    <span className={`text-sm font-semibold ml-2 shrink-0 flex items-center gap-0.5 ${
+                      txn.amount < 0 ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {txn.amount < 0 && <ArrowUpRight className="w-3 h-3" />}
+                      {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(Math.abs(txn.amount ?? 0))}
                     </span>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-400 py-6 text-center">No upcoming bills detected.</p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 py-6 text-center">No transactions yet.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

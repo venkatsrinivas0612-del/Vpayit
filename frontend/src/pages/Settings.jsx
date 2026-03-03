@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Building2, Link2, Trash2, Plus, RefreshCw, CheckCircle } from 'lucide-react';
+import { Loader2, Building2, Link2, Trash2, Plus, RefreshCw, CheckCircle, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { api } from '../lib/api';
@@ -9,6 +9,7 @@ const BUSINESS_TYPES = ['Sole Trader','Limited Company','Partnership','LLP','CIC
 export default function Settings() {
   const { user, profile, fetchProfile } = useAuth();
 
+  // ── Business profile ──────────────────────────────────────
   const [profileForm, setProfileForm] = useState({
     business_name: '',
     business_type: '',
@@ -17,10 +18,22 @@ export default function Settings() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg,    setProfileMsg   ] = useState('');
 
+  // ── Bank connections ───────────────────────────────────────
   const [banks, setBanks]         = useState([]);
   const [banksLoading, setBanksL] = useState(true);
   const [bankMsg, setBankMsg]     = useState('');
   const [syncing, setSyncing]     = useState(null);
+
+  // ── Change password ────────────────────────────────────────
+  const [pwdForm, setPwdForm]     = useState({ newPwd: '', confirmPwd: '' });
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdMsg, setPwdMsg]       = useState('');
+  const [showNewPwd, setShowNew]  = useState(false);
+  const [showConfirm, setShowCfm] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Settings | Vpayit';
+  }, []);
 
   useEffect(() => {
     if (profile) {
@@ -64,6 +77,28 @@ export default function Settings() {
     } finally { setProfileSaving(false); }
   }
 
+  async function changePassword(e) {
+    e.preventDefault();
+    if (pwdForm.newPwd !== pwdForm.confirmPwd) {
+      setPwdMsg('Error: Passwords do not match.');
+      return;
+    }
+    if (pwdForm.newPwd.length < 8) {
+      setPwdMsg('Error: Password must be at least 8 characters.');
+      return;
+    }
+    setPwdSaving(true);
+    setPwdMsg('');
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pwdForm.newPwd });
+      if (error) throw error;
+      setPwdMsg('Password updated successfully.');
+      setPwdForm({ newPwd: '', confirmPwd: '' });
+    } catch (err) {
+      setPwdMsg(`Error: ${err.message}`);
+    } finally { setPwdSaving(false); }
+  }
+
   async function connectBank() {
     try {
       const { url } = await api.banks.authUrl();
@@ -95,11 +130,22 @@ export default function Settings() {
     }
   }
 
+  function msgBox(msg, extra = '') {
+    const isErr = msg.startsWith('Error');
+    return (
+      <div className={`mb-4 p-3 rounded-lg text-sm flex items-center gap-2 ${extra}
+        ${isErr ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-green-50 border border-green-200 text-green-700'}`}>
+        {!isErr && <CheckCircle className="w-4 h-4 shrink-0" />}
+        {msg}
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Manage your business profile and bank connections</p>
+        <p className="text-slate-500 text-sm mt-0.5">Manage your business profile, bank connections and account security</p>
       </div>
 
       {/* ── Business profile ── */}
@@ -109,13 +155,7 @@ export default function Settings() {
         </h2>
         <p className="text-sm text-slate-500 mb-5">This information appears on your bill summaries.</p>
 
-        {profileMsg && (
-          <div className={`mb-4 p-3 rounded-lg text-sm flex items-center gap-2
-            ${profileMsg.startsWith('Error') ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-green-50 border border-green-200 text-green-700'}`}>
-            {!profileMsg.startsWith('Error') && <CheckCircle className="w-4 h-4 shrink-0" />}
-            {profileMsg}
-          </div>
-        )}
+        {profileMsg && msgBox(profileMsg)}
 
         <form onSubmit={saveProfile} className="space-y-4">
           <div>
@@ -169,6 +209,69 @@ export default function Settings() {
         </form>
       </section>
 
+      {/* ── Change password ── */}
+      <section className="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 className="font-semibold text-slate-900 mb-1 flex items-center gap-2">
+          <KeyRound className="w-4 h-4" /> Change password
+        </h2>
+        <p className="text-sm text-slate-500 mb-5">Update your account password. Must be at least 8 characters.</p>
+
+        {pwdMsg && msgBox(pwdMsg)}
+
+        <form onSubmit={changePassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">New password</label>
+            <div className="relative">
+              <input
+                type={showNewPwd ? 'text' : 'password'}
+                value={pwdForm.newPwd}
+                onChange={e => setPwdForm(f => ({ ...f, newPwd: e.target.value }))}
+                placeholder="••••••••"
+                required
+                minLength={8}
+                className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                {showNewPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Confirm new password</label>
+            <div className="relative">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                value={pwdForm.confirmPwd}
+                onChange={e => setPwdForm(f => ({ ...f, confirmPwd: e.target.value }))}
+                placeholder="••••••••"
+                required
+                minLength={8}
+                className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCfm(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={pwdSaving}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-colors"
+          >
+            {pwdSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+            {pwdSaving ? 'Updating…' : 'Update password'}
+          </button>
+        </form>
+      </section>
+
       {/* ── Bank connections ── */}
       <section className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-1">
@@ -184,14 +287,7 @@ export default function Settings() {
         </div>
         <p className="text-sm text-slate-500 mb-5">Connected via Open Banking (TrueLayer). Read-only access.</p>
 
-        {bankMsg && (
-          <div className={`mb-4 p-3 rounded-lg text-sm
-            ${bankMsg.startsWith('Error') || bankMsg.startsWith('Sync error')
-              ? 'bg-red-50 border border-red-200 text-red-700'
-              : 'bg-green-50 border border-green-200 text-green-700'}`}>
-            {bankMsg}
-          </div>
-        )}
+        {bankMsg && msgBox(bankMsg)}
 
         {banksLoading ? (
           <div className="flex justify-center py-8">

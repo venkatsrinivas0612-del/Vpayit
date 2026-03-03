@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Building2, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +17,8 @@ export default function Login() {
   const [loading, setLoading]   = useState(false);
   const [showPwd, setShowPwd]   = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
+
+  useEffect(() => { document.title = 'Sign in | Vpayit'; }, []);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 

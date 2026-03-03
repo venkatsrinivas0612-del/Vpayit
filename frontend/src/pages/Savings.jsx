@@ -22,7 +22,7 @@ export default function Savings() {
     finally { setLoading(false); }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { document.title = 'Savings | Vpayit'; load(); }, []);
 
   async function generate() {
     setGen(true);

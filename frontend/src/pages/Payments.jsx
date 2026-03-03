@@ -5,18 +5,58 @@ import { api } from '../lib/api';
 const fmt = (n) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(Math.abs(n ?? 0));
 
+const DATE_RANGES = [
+  { label: '30 days', value: '30d' },
+  { label: '3 months', value: '90d' },
+  { label: '6 months', value: '180d' },
+  { label: 'All time', value: 'all' },
+];
+
+const BILL_CATEGORIES = [
+  { label: 'All categories', value: '' },
+  { label: 'Energy',           value: 'energy' },
+  { label: 'Water',            value: 'water' },
+  { label: 'Telecoms',         value: 'telecoms' },
+  { label: 'Insurance',        value: 'insurance' },
+  { label: 'Software',         value: 'software' },
+  { label: 'Business Rates',   value: 'rates' },
+  { label: 'Rent',             value: 'rent' },
+  { label: 'Waste',            value: 'waste' },
+  { label: 'Tax',              value: 'tax' },
+  { label: 'Other',            value: 'unknown' },
+];
+
+function getDateFrom(range) {
+  if (range === 'all') return null;
+  const d = new Date();
+  d.setDate(d.getDate() - parseInt(range));
+  return d.toISOString().slice(0, 10);
+}
+
 export default function Payments() {
   const [transactions, setTransactions] = useState([]);
-  const [meta, setMeta]   = useState(null);
+  const [meta, setMeta]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage]   = useState(1);
-  const [search, setSearch] = useState('');
-  const [billsOnly, setBillsOnly] = useState(false);
+  const [page, setPage]       = useState(1);
+  const [search, setSearch]   = useState('');
+  const [billsOnly, setBillsOnly]     = useState(false);
+  const [dateRange, setDateRange]     = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
-  async function load(p, isB) {
+  useEffect(() => {
+    document.title = 'Payments | Vpayit';
+  }, []);
+
+  async function load(p, isB, range) {
     setLoading(true);
     try {
-      const params = { page: p, limit: 50, ...(isB && { is_bill: true }) };
+      const dateFrom = getDateFrom(range);
+      const params = {
+        page: p,
+        limit: 50,
+        ...(isB && { is_bill: true }),
+        ...(dateFrom && { date_from: dateFrom }),
+      };
       const res = await api.transactions.list(params);
       setTransactions(res.data ?? []);
       setMeta(res.meta);
@@ -24,13 +64,15 @@ export default function Payments() {
     finally { setLoading(false); }
   }
 
-  useEffect(() => { load(page, billsOnly); }, [page, billsOnly]);
+  useEffect(() => { load(page, billsOnly, dateRange); }, [page, billsOnly, dateRange]);
 
-  const filtered = search.trim()
-    ? transactions.filter(t =>
-        t.description?.toLowerCase().includes(search.toLowerCase())
-      )
-    : transactions;
+  const filtered = transactions.filter(t => {
+    if (search.trim() && !t.description?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (categoryFilter && t.bill_category !== categoryFilter) return false;
+    return true;
+  });
+
+  const totalFiltered = filtered.reduce((s, t) => s + (t.amount || 0), 0);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -42,29 +84,62 @@ export default function Payments() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search transactions…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-          />
+      <div className="space-y-3 mb-4">
+        {/* Date range filter */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Period:</span>
+          {DATE_RANGES.map(r => (
+            <button
+              key={r.value}
+              onClick={() => { setDateRange(r.value); setPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                dateRange === r.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={billsOnly}
-            onChange={e => { setBillsOnly(e.target.checked); setPage(1); }}
-            className="rounded text-blue-600"
-          />
-          Bills only
-        </label>
-        {meta && (
-          <span className="ml-auto text-xs text-slate-400">{meta.total} transactions</span>
-        )}
+
+        {/* Search + filters row */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search transactions…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+            />
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            {BILL_CATEGORIES.map(c => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={billsOnly}
+              onChange={e => { setBillsOnly(e.target.checked); setPage(1); }}
+              className="rounded text-blue-600"
+            />
+            Bills only
+          </label>
+
+          {meta && (
+            <span className="ml-auto text-xs text-slate-400">{meta.total} transactions</span>
+          )}
+        </div>
       </div>
 
       {/* Table */}
@@ -125,6 +200,16 @@ export default function Payments() {
                 ))}
               </tbody>
             </table>
+
+            {/* Running total */}
+            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <span className="text-xs text-slate-500">{filtered.length} shown</span>
+              <span className="text-sm font-semibold text-slate-700">
+                Total: <span className={totalFiltered < 0 ? 'text-red-600' : 'text-green-600'}>
+                  {new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(totalFiltered)}
+                </span>
+              </span>
+            </div>
 
             {/* Pagination */}
             {meta && meta.pages > 1 && (

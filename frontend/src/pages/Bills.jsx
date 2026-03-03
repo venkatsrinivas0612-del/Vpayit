@@ -57,6 +57,7 @@ export default function Bills() {
     finally { setLoading(false); }
   }
 
+  useEffect(() => { document.title = 'Bills | Vpayit'; }, []);
   useEffect(() => { load(category); }, [category]);
 
   async function runDetect() {
