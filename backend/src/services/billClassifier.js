@@ -1,17 +1,18 @@
 const { serviceClient } = require('../config/supabase');
+const cache = require('../utils/cache');
 
-// ── Supplier pattern cache ────────────────────────────────
-let _cache = null;
-let _cacheExpiry = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 async function loadSuppliers() {
-  if (_cache && Date.now() < _cacheExpiry) return _cache;
+  const cached = cache.get('suppliers');
+  if (cached) return cached;
   const { data, error } = await serviceClient.from('suppliers').select('*');
   if (error) throw error;
-  _cache = data;
-  _cacheExpiry = Date.now() + CACHE_TTL_MS;
-  return _cache;
+  cache.set('suppliers', data, CACHE_TTL_MS);
+  // Also cache the unique bill categories derived from suppliers
+  const categories = [...new Set(data.map(s => s.category).filter(Boolean))];
+  cache.set('bill_categories', categories, CACHE_TTL_MS);
+  return data;
 }
 
 // ── Generic bill signal patterns ─────────────────────────
@@ -148,10 +149,10 @@ function _nextDueDate(lastDateStr, frequency) {
   return d.toISOString().split('T')[0];
 }
 
-/** Bust the supplier cache (e.g. after seeding) */
+/** Bust the supplier/category cache (e.g. after seeding) */
 function bustCache() {
-  _cache = null;
-  _cacheExpiry = 0;
+  cache.delete('suppliers');
+  cache.delete('bill_categories');
 }
 
 module.exports = { classifyTransaction, detectRecurringBills, bustCache };

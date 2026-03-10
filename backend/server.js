@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const morgan = require('morgan');
 
 const logger = require('./src/utils/logger');
 const routes = require('./src/routes');
@@ -20,6 +22,14 @@ const app = express();
 
 // ── Security headers ─────────────────────────────────────
 app.use(helmet());
+
+// ── Compression ───────────────────────────────────────────
+app.use(compression());
+
+// ── Request logging (dev only) ────────────────────────────
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // ── CORS ─────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -67,8 +77,21 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ── Health check ──────────────────────────────────────────
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'vpayit-api', timestamp: new Date().toISOString() });
+app.get('/health', async (_req, res) => {
+  const { serviceClient } = require('./src/config/supabase');
+  let db = 'connected';
+  try {
+    const { error } = await serviceClient.from('suppliers').select('id').limit(1);
+    if (error) db = 'error';
+  } catch {
+    db = 'error';
+  }
+  const status = db === 'connected' ? 'ok' : 'degraded';
+  res.status(db === 'connected' ? 200 : 503).json({
+    status,
+    db,
+    uptime: process.uptime(),
+  });
 });
 
 // ── API routes ────────────────────────────────────────────
