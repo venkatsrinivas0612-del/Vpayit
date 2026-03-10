@@ -1,22 +1,20 @@
 /**
- * Lightweight structured logger.
- * Writes JSON lines to stdout/stderr so Railway can ingest them.
+ * Logger that only outputs in development mode.
+ * In production all methods are no-ops to avoid leaking internals.
  */
 
 const isDev = process.env.NODE_ENV === 'development';
 
-function format(level, message, meta) {
-  if (isDev) {
-    const metaStr = meta ? ' ' + JSON.stringify(meta) : '';
-    return `[${new Date().toISOString()}] ${level.toUpperCase()} ${message}${metaStr}`;
-  }
-  return JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta });
+function write(stream, level, message, meta) {
+  if (!isDev) return;
+  const metaStr = meta ? ' ' + JSON.stringify(meta) : '';
+  stream.write(`[${new Date().toISOString()}] ${level} ${message}${metaStr}\n`);
 }
 
 const logger = {
-  info:  (msg, meta) => process.stdout.write(format('info',  msg, meta) + '\n'),
-  warn:  (msg, meta) => process.stderr.write(format('warn',  msg, meta) + '\n'),
-  error: (msg, meta) => process.stderr.write(format('error', msg, meta) + '\n'),
+  info:  (msg, meta) => write(process.stdout, 'INFO ', msg, meta),
+  warn:  (msg, meta) => write(process.stderr, 'WARN ', msg, meta),
+  error: (msg, meta) => write(process.stderr, 'ERROR', msg, meta),
 };
 
 module.exports = logger;

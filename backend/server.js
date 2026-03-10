@@ -8,19 +8,11 @@ const logger = require('./src/utils/logger');
 const routes = require('./src/routes');
 const errorHandler = require('./src/middleware/errorHandler');
 
-// ── Env validation ────────────────────────────────────────
-const REQUIRED_ENV = [
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_KEY',
-  'SUPABASE_ANON_KEY',
-  'ENCRYPTION_KEY',
-  'TRUELAYER_CLIENT_ID',
-  'TRUELAYER_CLIENT_SECRET',
-  'TRUELAYER_REDIRECT_URI',
-];
-const missing = REQUIRED_ENV.filter(k => !process.env[k]);
-if (missing.length) {
-  logger.error('Missing required environment variables', { missing });
+// ── Env validation (TrueLayer vars — Supabase/core vars checked in config/supabase.js) ──
+const REQUIRED_TRUELAYER = ['TRUELAYER_CLIENT_ID', 'TRUELAYER_CLIENT_SECRET', 'TRUELAYER_REDIRECT_URI'];
+const missingTL = REQUIRED_TRUELAYER.filter(k => !process.env[k]);
+if (missingTL.length) {
+  missingTL.forEach(k => logger.error(`Missing required env var: ${k}`));
   process.exit(1);
 }
 
@@ -61,7 +53,7 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many auth attempts — please try again later.' },

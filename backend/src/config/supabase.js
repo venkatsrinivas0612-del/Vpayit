@@ -1,14 +1,22 @@
 const { createClient } = require('@supabase/supabase-js');
 
+const REQUIRED_VARS = [
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_KEY',
+  'ENCRYPTION_KEY',
+  'JWT_SECRET',
+];
+
+const missing = REQUIRED_VARS.filter(k => !process.env[k]);
+if (missing.length) {
+  missing.forEach(k => console.error(`[config/supabase] Missing required env var: ${k}`));
+  process.exit(1);
+}
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SUPABASE_ANON_KEY) {
-  throw new Error(
-    'Missing required env vars: SUPABASE_URL, SUPABASE_SERVICE_KEY, SUPABASE_ANON_KEY'
-  );
-}
 
 /**
  * Service-role client.
