@@ -64,7 +64,9 @@ function BillHistoryChart({ historyData, loading }) {
     );
   }
 
-  if (!historyData || historyData.months.length === 0) {
+  // Defensive: treat missing/empty months as no-data
+  const months = Array.isArray(historyData?.months) ? historyData.months : [];
+  if (!historyData || months.length === 0) {
     return (
       <p className="text-xs text-slate-400 py-3">No transaction history available yet.</p>
     );
@@ -411,10 +413,9 @@ export default function Bills() {
 
                   {isExpanded && (
                     <div className="px-4 pb-4 border-t border-slate-100 pt-3 bg-slate-50">
-                      <BillHistory
-                        bill={bill}
-                        allTxns={allBillTxns}
-                        loading={txnsLoading}
+                      <BillHistoryChart
+                        historyData={billHistories[bill.id] !== 'loading' ? billHistories[bill.id] : null}
+                        loading={billHistories[bill.id] === 'loading' || billHistories[bill.id] === undefined}
                       />
                     </div>
                   )}
