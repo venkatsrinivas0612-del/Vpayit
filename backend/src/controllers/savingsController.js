@@ -78,11 +78,6 @@ const generateOpportunities = async (req, res, next) => {
 const updateStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const VALID = ['viewed', 'applied', 'dismissed'];
-
-    if (!VALID.includes(status)) {
-      return res.status(400).json({ error: `status must be one of: ${VALID.join(', ')}` });
-    }
 
     const { data, error } = await req.supabase
       .from('savings_opportunities')

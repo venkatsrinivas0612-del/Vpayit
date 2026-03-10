@@ -4,8 +4,25 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
+const logger = require('./src/utils/logger');
 const routes = require('./src/routes');
 const errorHandler = require('./src/middleware/errorHandler');
+
+// ── Env validation ────────────────────────────────────────
+const REQUIRED_ENV = [
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_KEY',
+  'SUPABASE_ANON_KEY',
+  'ENCRYPTION_KEY',
+  'TRUELAYER_CLIENT_ID',
+  'TRUELAYER_CLIENT_SECRET',
+  'TRUELAYER_REDIRECT_URI',
+];
+const missing = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missing.length) {
+  logger.error('Missing required environment variables', { missing });
+  process.exit(1);
+}
 
 const app = express();
 
@@ -36,7 +53,7 @@ app.use(cors({
 // ── Rate limiting ─────────────────────────────────────────
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests — please try again later.' },
@@ -76,8 +93,7 @@ app.use(errorHandler);
 // ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`✓ Vpayit API running on http://localhost:${PORT}`);
-  console.log(`  Environment : ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Vpayit API running on http://localhost:${PORT}`, { env: process.env.NODE_ENV || 'development' });
 });
 
 module.exports = app;

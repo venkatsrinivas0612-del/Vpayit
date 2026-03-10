@@ -2,6 +2,7 @@ const { serviceClient } = require('../config/supabase');
 const truelayer = require('../services/truelayerService');
 const { encrypt } = require('../services/encryptionService');
 const { classifyTransaction, detectRecurringBills } = require('../services/billClassifier');
+const logger = require('../utils/logger');
 
 const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -129,12 +130,6 @@ async function _detectBillsForUser(db, userId) {
 const getAuthUrl = async (req, res, next) => {
   try {
     const url = truelayer.getAuthUrl(req.user.id);
-
-    // ── DEBUG: print the full TrueLayer auth URL so you can inspect it ──────
-    console.log('\n─── TrueLayer auth URL ───────────────────────────────────');
-    console.log(url);
-    console.log('─────────────────────────────────────────────────────────\n');
-
     res.json({ url });
   } catch (err) { next(err); }
 };
@@ -151,7 +146,7 @@ const handleCallback = async (req, res) => {
   const { code, state: userId, error: oauthError } = req.query;
 
   if (oauthError) {
-    console.warn('TrueLayer OAuth error:', oauthError);
+    logger.warn('TrueLayer OAuth error', { oauthError });
     return res.redirect(`${FRONTEND}/settings?bank_error=${encodeURIComponent(oauthError)}`);
   }
 
@@ -230,7 +225,7 @@ const handleCallback = async (req, res) => {
           .update({ last_synced: new Date().toISOString() })
           .eq('id', conn.id);
       } catch (syncErr) {
-        console.error(`Transaction sync failed for account ${accountId}:`, syncErr.message);
+        logger.error('Transaction sync failed', { accountId, message: syncErr.message });
       }
     }
 
@@ -241,7 +236,7 @@ const handleCallback = async (req, res) => {
     res.redirect(`${FRONTEND}/dashboard?connected=1`);
 
   } catch (err) {
-    console.error('Bank callback error:', err.message);
+    logger.error('Bank callback error', { message: err.message });
     res.redirect(`${FRONTEND}/settings?bank_error=connection_failed`);
   }
 };

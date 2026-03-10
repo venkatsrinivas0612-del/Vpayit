@@ -17,20 +17,11 @@ const { serviceClient } = require('../config/supabase');
 
 const submitContact = async (req, res, next) => {
   try {
-    const { name, email, company = '', message } = req.body ?? {};
-
-    if (!name || !email || !message) {
-      return res.status(400).json({ error: 'name, email, and message are required' });
-    }
-
-    // Basic email format check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
+    const { name, email, company = '', message } = req.body;
 
     const { error } = await serviceClient
       .from('contact_submissions')
-      .insert({ name: name.trim(), email: email.trim().toLowerCase(), company: company.trim(), message: message.trim() });
+      .insert({ name, email, company, message });
 
     if (error) throw error;
 
