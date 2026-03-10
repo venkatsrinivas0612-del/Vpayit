@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Loader2, BarChart2, Download } from 'lucide-react';
+import { Loader2, BarChart2, Download, FileText } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { api } from '../lib/api';
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
-import { api } from '../lib/api';
 
 const fmt  = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n ?? 0);
 
@@ -94,6 +95,27 @@ export default function Reports() {
     URL.revokeObjectURL(url);
   }
 
+  async function downloadPdf() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const url = api.reports.pdfUrl(6);
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('PDF generation failed');
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `vpayit-report-${new Date().toISOString().slice(0,10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('PDF download failed:', err);
+    }
+  }
+
   const latestMonth = monthlyData[monthlyData.length - 1];
   const hasData = monthlyData.some(m => m.total > 0 || m.billSpend > 0);
 
@@ -127,12 +149,20 @@ export default function Reports() {
           <p className="text-slate-500 text-sm mt-0.5">Spending analysis for your business bills over the last 6 months</p>
         </div>
         {hasData && (
-          <button
-            onClick={downloadCsv}
-            className="flex items-center gap-2 px-4 py-2 border border-slate-300 hover:border-slate-400 text-slate-600 hover:text-slate-800 font-medium text-sm rounded-lg transition-colors"
-          >
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={downloadPdf}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors"
+            >
+              <FileText className="w-4 h-4" /> Download PDF Report
+            </button>
+            <button
+              onClick={downloadCsv}
+              className="flex items-center gap-2 px-4 py-2 border border-slate-300 hover:border-slate-400 text-slate-600 hover:text-slate-800 font-medium text-sm rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" /> Export CSV
+            </button>
+          </div>
         )}
       </div>
 

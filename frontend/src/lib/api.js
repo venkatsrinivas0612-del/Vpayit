@@ -47,26 +47,34 @@ export const api = {
     updateProfile: (body)   => api.patch('/auth/me', body),
   },
   banks: {
-    list:      ()    => api.get('/banks'),
-    authUrl:   ()    => api.get('/banks/auth-url'),
+    list:      ()     => api.get('/banks'),
+    authUrl:   ()     => api.get('/banks/auth-url'),
     callback:  (code) => api.post('/banks/callback', { code }),
-    sync:      (id)  => api.post(`/banks/${id}/sync`),
-    remove:    (id)  => api.delete(`/banks/${id}`),
+    sync:      (id)   => api.post(`/banks/${id}/sync`),
+    remove:    (id)   => api.delete(`/banks/${id}`),
   },
   bills: {
     list:    (params = {}) => api.get(`/bills?${new URLSearchParams(params)}`),
     detect:  ()            => api.post('/bills/detect'),
     get:     (id)          => api.get(`/bills/${id}`),
     update:  (id, body)    => api.patch(`/bills/${id}`, body),
+    history: (id)          => api.get(`/bills/${id}/history`),
   },
   savings: {
-    list:     ()     => api.get('/savings'),
-    generate: ()     => api.post('/savings/generate'),
-    update:   (id, status) => api.patch(`/savings/${id}`, { status }),
+    list:     ()            => api.get('/savings'),
+    generate: ()            => api.post('/savings/generate'),
+    update:   (id, status)  => api.patch(`/savings/${id}`, { status }),
   },
   transactions: {
     list:    (params = {}) => api.get(`/transactions?${new URLSearchParams(params)}`),
     bills:   ()            => api.get('/transactions/bills'),
     summary: (month)       => api.get(`/transactions/summary${month ? `?month=${month}` : ''}`),
+  },
+  notifications: {
+    billReminders: () => api.post('/notifications/bill-reminders'),
+  },
+  reports: {
+    // Returns a signed URL string for PDF download (token appended by caller)
+    pdfUrl: (months = 6) => `${BASE}/reports/export?months=${months}`,
   },
 };

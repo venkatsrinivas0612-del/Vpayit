@@ -140,6 +140,10 @@ export default function Settings() {
     } catch { return { billsDue: true, monthlyReport: false }; }
   });
 
+  // ── Bill reminders preview ─────────────────────────────────
+  const [reminders, setReminders]         = useState(null);
+  const [remindersLoading, setRemindersL] = useState(false);
+
   // ── Danger zone ────────────────────────────────────────────
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting]               = useState(false);
@@ -163,6 +167,17 @@ export default function Settings() {
     const updated = { ...notifications, [key]: !notifications[key] };
     setNotifications(updated);
     localStorage.setItem('vpayit_notifications', JSON.stringify(updated));
+    // When enabling bill reminders, fetch preview
+    if (key === 'billsDue' && updated.billsDue) loadReminders();
+  }
+
+  async function loadReminders() {
+    setRemindersL(true);
+    try {
+      const res = await api.notifications.billReminders();
+      setReminders(res);
+    } catch { setReminders({ upcoming: [], count: 0 }); }
+    finally { setRemindersL(false); }
   }
 
   async function loadBanks() {
@@ -421,12 +436,47 @@ export default function Settings() {
         <p className="text-sm text-slate-500 mb-5">Choose which alerts you receive from Vpayit.</p>
 
         <div className="space-y-5">
-          <Toggle
-            checked={notifications.billsDue}
-            onChange={v => toggleNotif('billsDue')}
-            label="Bill payment reminders"
-            description="Email me 7 days before a bill is due"
-          />
+          <div>
+            <Toggle
+              checked={notifications.billsDue}
+              onChange={v => toggleNotif('billsDue')}
+              label="Bill payment reminders"
+              description="Get notified 7 days before a bill is due"
+            />
+            {/* Reminders preview */}
+            {notifications.billsDue && (
+              <div className="mt-3 ml-14">
+                {remindersLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Loading upcoming bills…
+                  </div>
+                ) : reminders === null ? (
+                  <button
+                    onClick={loadReminders}
+                    className="text-xs text-blue-600 hover:underline cursor-pointer"
+                  >
+                    Preview upcoming reminders →
+                  </button>
+                ) : reminders.count === 0 ? (
+                  <p className="text-xs text-slate-400 bg-slate-50 rounded-lg px-3 py-2">
+                    ✓ No bills due in the next 7 days.
+                  </p>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-1">
+                    <p className="text-xs font-semibold text-amber-800 mb-1.5">
+                      Would send {reminders.count} reminder{reminders.count !== 1 ? 's' : ''}:
+                    </p>
+                    {reminders.upcoming.map(r => (
+                      <p key={r.bill_id} className="text-xs text-amber-700">
+                        ⚠️ {r.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <Toggle
             checked={notifications.monthlyReport}
             onChange={v => toggleNotif('monthlyReport')}
@@ -436,7 +486,7 @@ export default function Settings() {
         </div>
 
         <p className="mt-4 text-xs text-slate-400">
-          Notification delivery requires your email to be confirmed. Preferences saved locally.
+          Notification delivery via email — integration coming soon. Preferences saved locally.
         </p>
       </section>
 
@@ -501,6 +551,13 @@ export default function Settings() {
                 </div>
               </div>
             ))}
+            {/* Add another bank button */}
+            <button
+              onClick={connectBank}
+              className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Add another bank account
+            </button>
           </div>
         )}
       </section>

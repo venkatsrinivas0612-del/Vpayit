@@ -20,5 +20,11 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
+  // Redirect to onboarding for first-time users (not already on /onboarding)
+  const onboardingDone = localStorage.getItem('vpayit_onboarding_completed') === '1';
+  if (!onboardingDone && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return children;
 }

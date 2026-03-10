@@ -3,6 +3,9 @@ import {
   Loader2, RefreshCw, Filter, TrendingUp, TrendingDown, Receipt,
   ChevronDown, ChevronUp,
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
 import { api } from '../lib/api';
 import { useToast } from '../context/ToastContext';
 
@@ -52,59 +55,73 @@ function Badge({ category }) {
   );
 }
 
-// Groups transactions by month → { "Nov 2024": 328.00, ... }
-function groupByMonth(txns) {
-  return txns.reduce((acc, t) => {
-    const key = new Date(t.date).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
-    acc[key] = (acc[key] || 0) + Math.abs(t.amount ?? 0);
-    return acc;
-  }, {});
-}
-
-function BillHistory({ bill, allTxns, loading }) {
+function BillHistoryChart({ historyData, loading }) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 py-2 text-slate-400 text-sm">
-        <Loader2 className="w-4 h-4 animate-spin" /> Loading payment history…
+      <div className="flex items-center gap-2 py-4 text-slate-400 text-sm">
+        <Loader2 className="w-4 h-4 animate-spin" /> Loading price history…
       </div>
     );
   }
 
-  const history = allTxns
-    ? allTxns.filter(t =>
-        bill.supplier?.name
-          ? t.supplier?.name === bill.supplier.name
-          : t.bill_category === bill.category && !t.supplier?.name
-      )
-    : [];
-
-  const grouped = groupByMonth(history);
-  const entries = Object.entries(grouped).slice(-6).reverse();
-
-  if (entries.length === 0) {
+  if (!historyData || historyData.months.length === 0) {
     return (
-      <p className="text-xs text-slate-400 py-2">
-        No recent payment history found.
-        {bill.current_amount && (
-          <span> Current amount: <strong>{fmt(bill.current_amount)}</strong></span>
-        )}
-      </p>
+      <p className="text-xs text-slate-400 py-3">No transaction history available yet.</p>
     );
   }
+
+  const { months, trend, trendPct } = historyData;
+
+  const trendLabel =
+    trend === 'up'   ? `Trending up ${Math.abs(trendPct)}% over 6 months` :
+    trend === 'down' ? `Trending down ${Math.abs(trendPct)}% over 6 months` :
+                       'Stable over 6 months';
+  const trendColour =
+    trend === 'up' ? 'text-red-600' : trend === 'down' ? 'text-green-600' : 'text-slate-500';
+  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : null;
 
   return (
     <div>
-      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-        Payment history
-      </p>
-      <div className="flex gap-4 flex-wrap">
-        {entries.map(([month, total]) => (
-          <div key={month} className="text-center">
-            <p className="text-xs text-slate-400">{month}</p>
-            <p className="text-sm font-semibold text-slate-800">{fmt(total)}</p>
-          </div>
-        ))}
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          12-month price history
+        </p>
+        <div className={`flex items-center gap-1 text-xs font-semibold ${trendColour}`}>
+          {TrendIcon && <TrendIcon className="w-3 h-3" />}
+          {trendLabel}
+        </div>
       </div>
+      <ResponsiveContainer width="100%" height={140}>
+        <LineChart data={months} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            axisLine={false}
+            tickLine={false}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={v => `£${v}`}
+            width={50}
+          />
+          <Tooltip
+            formatter={v => [new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(v), 'Amount']}
+            contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="amount"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            dot={{ fill: '#3b82f6', r: 3 }}
+            activeDot={{ r: 5 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -116,9 +133,9 @@ export default function Bills() {
   const [detecting, setDetect]    = useState(false);
   const [category, setCategory]   = useState('');
   const [msg, setMsg]             = useState('');
-  const [expandedId, setExpandedId] = useState(null);
-  const [allBillTxns, setAllBillTxns] = useState(null); // null = not yet loaded
-  const [txnsLoading, setTxnsLoading] = useState(false);
+  const [expandedId, setExpandedId]   = useState(null);
+  // billHistories: { [billId]: { months, trend, trendPct } | 'loading' }
+  const [billHistories, setBillHistories] = useState({});
 
   useEffect(() => { document.title = 'Bills | Vpayit'; }, []);
   useEffect(() => { load(category); }, [category]);
@@ -142,26 +159,13 @@ export default function Bills() {
       const msg = `Detection complete — ${res.data.detected} recurring bills found, ${res.data.created} new records created.`;
       setMsg(msg);
       await load(category);
-      // Reset cached transactions so history refreshes
-      setAllBillTxns(null);
+      // Clear cached histories so they refresh
+      setBillHistories({});
     } catch (err) {
       setMsg(`Error: ${err.message}`);
       addToast(`Detect bills failed: ${err.message}`, 'error');
     } finally {
       setDetect(false);
-    }
-  }
-
-  async function loadAllBillTxns() {
-    if (allBillTxns !== null) return; // already loaded
-    setTxnsLoading(true);
-    try {
-      const res = await api.transactions.list({ is_bill: true, limit: 200 });
-      setAllBillTxns(res.data ?? []);
-    } catch {
-      setAllBillTxns([]);
-    } finally {
-      setTxnsLoading(false);
     }
   }
 
@@ -171,7 +175,16 @@ export default function Bills() {
       return;
     }
     setExpandedId(bill.id);
-    await loadAllBillTxns();
+    // Fetch history if not already cached
+    if (!billHistories[bill.id]) {
+      setBillHistories(h => ({ ...h, [bill.id]: 'loading' }));
+      try {
+        const res = await api.bills.history(bill.id);
+        setBillHistories(h => ({ ...h, [bill.id]: res.data }));
+      } catch {
+        setBillHistories(h => ({ ...h, [bill.id]: { months: [], trend: 'stable', trendPct: 0 } }));
+      }
+    }
   }
 
   const totalMonthly = bills.reduce((s, b) => {
@@ -312,10 +325,9 @@ export default function Bills() {
                     {isExpanded && (
                       <tr className="bg-slate-50">
                         <td colSpan={8} className="px-8 py-4 border-b border-slate-100">
-                          <BillHistory
-                            bill={bill}
-                            allTxns={allBillTxns}
-                            loading={txnsLoading}
+                          <BillHistoryChart
+                            historyData={billHistories[bill.id] !== 'loading' ? billHistories[bill.id] : null}
+                            loading={billHistories[bill.id] === 'loading'}
                           />
                         </td>
                       </tr>

@@ -7,12 +7,13 @@ import Login          from './pages/auth/Login';
 import Register       from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 
-import Dashboard from './pages/Dashboard';
-import Bills     from './pages/Bills';
-import Payments  from './pages/Payments';
-import Savings   from './pages/Savings';
-import Reports   from './pages/Reports';
-import Settings  from './pages/Settings';
+import Dashboard  from './pages/Dashboard';
+import Bills      from './pages/Bills';
+import Payments   from './pages/Payments';
+import Savings    from './pages/Savings';
+import Reports    from './pages/Reports';
+import Settings   from './pages/Settings';
+import Onboarding from './pages/Onboarding';
 
 function Protected({ children }) {
   return (
@@ -32,6 +33,9 @@ export default function App() {
       <Route path="/auth/login"           element={<Login />} />
       <Route path="/auth/register"        element={<Register />} />
       <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+
+      {/* Onboarding (protected, no sidebar layout) */}
+      <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
       {/* Protected app routes */}
       <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />

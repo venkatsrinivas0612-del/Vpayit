@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Receipt, TrendingDown, Building, AlertCircle,
   RefreshCw, ArrowRight, Plus, Loader2, CheckCircle2, X,
-  Zap, Sparkles, CreditCard, ArrowUpRight, BarChart3,
+  Zap, Sparkles, CreditCard, ArrowUpRight, BarChart3, Bell,
 } from 'lucide-react';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -75,6 +75,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     document.title = 'Dashboard | Vpayit';
+    // Check if onboarding was pending from bank connect flow
+    if (localStorage.getItem('vpayit_onboarding_bank_pending') === '1') {
+      localStorage.removeItem('vpayit_onboarding_bank_pending');
+      localStorage.setItem('vpayit_onboarding_completed', '1');
+      // fall through to dashboard (bank was just connected)
+    }
     load();
   }, []);
 
@@ -144,6 +150,15 @@ export default function Dashboard() {
 
   const noBanks = !loading && banks.length === 0;
 
+  // Quick lookup: bank_connection_id → provider name
+  const bankMap = Object.fromEntries(banks.map(b => [b.id, b.provider]));
+
+  // Bills due within 3 days (for alert banner)
+  const urgentBills = !loading ? upcomingBills.filter(b => {
+    const diff = (new Date(b.next_due_date) - new Date()) / 86_400_000;
+    return diff >= 0 && diff <= 3;
+  }) : [];
+
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -181,6 +196,30 @@ export default function Dashboard() {
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Urgent bills alert banner */}
+      {urgentBills.length > 0 && (
+        <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Bell className="w-4 h-4 text-amber-600 shrink-0" />
+            <p className="font-semibold text-amber-800 text-sm">
+              {urgentBills.length === 1 ? '1 bill due soon' : `${urgentBills.length} bills due soon`}
+            </p>
+          </div>
+          <div className="space-y-1">
+            {urgentBills.map(bill => {
+              const diff = Math.ceil((new Date(bill.next_due_date) - new Date()) / 86_400_000);
+              const when = diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : `in ${diff} days`;
+              const name = bill.supplier?.name || bill.category;
+              return (
+                <p key={bill.id} className="text-sm text-amber-700">
+                  ⚠️ <strong>{name}</strong> ({fmt(bill.current_amount)}) is due <strong>{when}</strong>
+                </p>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -393,6 +432,12 @@ export default function Dashboard() {
                       <p className="text-sm text-slate-800 truncate">{txn.description}</p>
                       <p className="text-xs text-slate-400">
                         {new Date(txn.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        {bankMap[txn.bank_connection_id] && (
+                          <span className="ml-1.5 text-slate-300">·</span>
+                        )}
+                        {bankMap[txn.bank_connection_id] && (
+                          <span className="ml-1.5">{bankMap[txn.bank_connection_id]}</span>
+                        )}
                       </p>
                     </div>
                     <span className={`text-sm font-semibold ml-2 shrink-0 flex items-center gap-0.5 ${
