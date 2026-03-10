@@ -72,7 +72,7 @@ function BillHistoryChart({ historyData, loading }) {
     );
   }
 
-  const { months, trend, trendPct } = historyData;
+  const { months: historyMonths, trend, trendPct } = historyData;
 
   const trendLabel =
     trend === 'up'   ? `Trending up ${Math.abs(trendPct)}% over 6 months` :
@@ -94,7 +94,7 @@ function BillHistoryChart({ historyData, loading }) {
         </div>
       </div>
       <ResponsiveContainer width="100%" height={140}>
-        <LineChart data={months} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+        <LineChart data={historyMonths} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
           <XAxis
             dataKey="label"
