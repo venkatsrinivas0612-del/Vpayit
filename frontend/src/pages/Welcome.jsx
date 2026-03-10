@@ -51,6 +51,18 @@ export default function Welcome() {
         </div>
         <div className="flex items-center gap-3">
           <Link
+            to="/pricing"
+            className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors"
+          >
+            Pricing
+          </Link>
+          <Link
+            to="/about"
+            className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors"
+          >
+            About
+          </Link>
+          <Link
             to="/auth/login"
             className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors"
           >
