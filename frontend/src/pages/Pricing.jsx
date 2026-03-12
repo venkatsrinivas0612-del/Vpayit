@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Check, Building2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Check, Building2, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 
 const TIERS = [
   {
@@ -9,8 +11,8 @@ const TIERS = [
     period: '',
     description: 'Everything you need to get started tracking your business bills.',
     cta: 'Get started free',
-    ctaTo: '/auth/register',
     ctaVariant: 'outline',
+    planId: null,
     highlight: false,
     features: [
       '1 bank connection',
@@ -26,8 +28,8 @@ const TIERS = [
     period: '/month',
     description: 'For growing businesses that want full visibility and savings.',
     cta: 'Start 14-day trial',
-    ctaTo: '/auth/register',
     ctaVariant: 'solid',
+    planId: 'pro',
     highlight: true,
     badge: 'Most popular',
     features: [
@@ -46,8 +48,8 @@ const TIERS = [
     period: '/month',
     description: 'For teams that need advanced controls and dedicated support.',
     cta: 'Start 14-day trial',
-    ctaTo: '/auth/register',
     ctaVariant: 'dark',
+    planId: 'business',
     highlight: false,
     features: [
       'Everything in Pro',
@@ -68,7 +70,29 @@ function ctaClass(variant) {
 }
 
 export default function Pricing() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loadingPlan, setLoadingPlan] = useState(null);
+
   useEffect(() => { document.title = 'Pricing | Vpayit'; }, []);
+
+  async function handlePaidCta(planId) {
+    // Not logged in → send to register
+    if (!user) {
+      navigate('/auth/register', { state: { intendedPlan: planId } });
+      return;
+    }
+
+    setLoadingPlan(planId);
+    try {
+      const { url } = await api.billing.checkout(planId);
+      window.location.href = url;
+    } catch (err) {
+      alert(`Could not start checkout: ${err.message}`);
+    } finally {
+      setLoadingPlan(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -84,15 +108,26 @@ export default function Pricing() {
           <Link to="/about" className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors">
             About
           </Link>
-          <Link to="/auth/login" className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors">
-            Log in
-          </Link>
-          <Link
-            to="/auth/register"
-            className="text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Get started
-          </Link>
+          {user ? (
+            <Link
+              to="/dashboard"
+              className="text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/auth/login" className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors">
+                Log in
+              </Link>
+              <Link
+                to="/auth/register"
+                className="text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Get started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -129,9 +164,7 @@ export default function Pricing() {
                 <h2 className="text-xl font-bold text-slate-900 mb-1">{tier.name}</h2>
                 <div className="flex items-baseline gap-1 mb-2">
                   <span className="text-4xl font-extrabold text-slate-900">{tier.price}</span>
-                  {tier.period && (
-                    <span className="text-slate-400 text-sm">{tier.period}</span>
-                  )}
+                  {tier.period && <span className="text-slate-400 text-sm">{tier.period}</span>}
                 </div>
                 <p className="text-sm text-slate-500 leading-relaxed">{tier.description}</p>
               </div>
@@ -147,12 +180,23 @@ export default function Pricing() {
               </ul>
 
               {/* CTA */}
-              <Link
-                to={tier.ctaTo}
-                className={`block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-colors ${ctaClass(tier.ctaVariant)}`}
-              >
-                {tier.cta}
-              </Link>
+              {tier.planId === null ? (
+                <Link
+                  to="/auth/register"
+                  className={`block text-center py-3 px-6 rounded-xl font-semibold text-sm transition-colors ${ctaClass(tier.ctaVariant)}`}
+                >
+                  {tier.cta}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handlePaidCta(tier.planId)}
+                  disabled={loadingPlan === tier.planId}
+                  className={`flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-semibold text-sm transition-colors disabled:opacity-70 cursor-pointer ${ctaClass(tier.ctaVariant)}`}
+                >
+                  {loadingPlan === tier.planId && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {loadingPlan === tier.planId ? 'Redirecting…' : tier.cta}
+                </button>
+              )}
             </div>
           ))}
         </div>

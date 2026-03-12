@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
   Loader2, Building2, Link2, Trash2, Plus, RefreshCw, CheckCircle,
-  KeyRound, Eye, EyeOff, Bell, AlertTriangle, X,
+  KeyRound, Eye, EyeOff, Bell, AlertTriangle, X, CreditCard, ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabaseClient';
 import { api } from '../lib/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import PlanBadge from '../components/PlanBadge';
 
 const BUSINESS_TYPES = ['Sole Trader','Limited Company','Partnership','LLP','CIC','Charity','Other'];
 
@@ -111,6 +112,7 @@ export default function Settings() {
   const { user, profile, fetchProfile, signOut } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // ── Business profile ───────────────────────────────────────
   const [profileForm, setProfileForm] = useState({
@@ -144,11 +146,22 @@ export default function Settings() {
   const [reminders, setReminders]         = useState(null);
   const [remindersLoading, setRemindersL] = useState(false);
 
+  // ── Billing ────────────────────────────────────────────────
+  const [portalLoading, setPortalLoading] = useState(false);
+
   // ── Danger zone ────────────────────────────────────────────
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting]               = useState(false);
 
   useEffect(() => { document.title = 'Settings | Vpayit'; }, []);
+
+  // Show success toast when returning from Stripe checkout
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      addToast('Payment successful! Your plan has been upgraded.', 'success');
+      if (user) fetchProfile(user.id);
+    }
+  }, []);
 
   useEffect(() => {
     if (profile) {
@@ -178,6 +191,16 @@ export default function Settings() {
       setReminders(res);
     } catch { setReminders({ upcoming: [], count: 0 }); }
     finally { setRemindersL(false); }
+  }
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const { url } = await api.billing.portal();
+      window.location.href = url;
+    } catch (err) {
+      addToast(`Could not open billing portal: ${err.message}`, 'error');
+    } finally { setPortalLoading(false); }
   }
 
   async function loadBanks() {
@@ -560,6 +583,48 @@ export default function Settings() {
             </button>
           </div>
         )}
+      </section>
+
+      {/* ── Billing ── */}
+      <section className="bg-white rounded-xl border border-slate-200 p-6">
+        <h2 className="font-semibold text-slate-900 mb-1 flex items-center gap-2">
+          <CreditCard className="w-4 h-4" /> Billing
+        </h2>
+        <p className="text-sm text-slate-500 mb-5">Manage your Vpayit subscription.</p>
+
+        <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50">
+          <div>
+            <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              Current plan <PlanBadge plan={profile?.plan || 'free'} />
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {(!profile?.plan || profile.plan === 'free')
+                ? 'Upgrade to unlock unlimited bills, PDF exports and more.'
+                : 'Your subscription is active. Manage or cancel via the customer portal.'}
+            </p>
+          </div>
+          <div className="ml-4 shrink-0">
+            {(!profile?.plan || profile.plan === 'free') ? (
+              <Link
+                to="/pricing"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors"
+              >
+                Upgrade
+              </Link>
+            ) : (
+              <button
+                onClick={openPortal}
+                disabled={portalLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+              >
+                {portalLoading
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <ExternalLink className="w-4 h-4" />}
+                {portalLoading ? 'Opening…' : 'Manage subscription'}
+              </button>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* ── Danger zone ── */}

@@ -73,6 +73,11 @@ export const api = {
   notifications: {
     billReminders: () => api.post('/notifications/bill-reminders'),
   },
+  billing: {
+    checkout: (plan)  => api.post('/billing/checkout', { plan }),
+    portal:   ()      => api.post('/billing/portal'),
+    status:   ()      => api.get('/billing/status'),
+  },
   reports: {
     // Returns a signed URL string for PDF download (token appended by caller)
     pdfUrl: (months = 6) => `${BASE}/reports/export?months=${months}`,

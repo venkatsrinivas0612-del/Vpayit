@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import PlanBadge from './PlanBadge';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard'  },
@@ -109,9 +110,12 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       <div className="border-t border-slate-700/60 p-3 space-y-1">
         {/* Always show on mobile; hide on desktop when collapsed */}
         <div className={`px-3 py-2 ${collapsed ? 'md:hidden' : ''}`}>
-          <p className="text-xs font-semibold text-white truncate">
-            {profile?.business_name || 'My Business'}
-          </p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <p className="text-xs font-semibold text-white truncate">
+              {profile?.business_name || 'My Business'}
+            </p>
+            <PlanBadge plan={profile?.plan || 'free'} />
+          </div>
           <p className="text-xs text-slate-400 truncate">{user?.email}</p>
         </div>
         {confirmSignOut ? (
