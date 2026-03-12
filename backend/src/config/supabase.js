@@ -14,6 +14,11 @@ if (missing.length) {
   process.exit(1);
 }
 
+// Optional — warn but don't crash
+if (!process.env.RESEND_API_KEY) {
+  console.warn('[config/supabase] RESEND_API_KEY not set — email sending will be disabled');
+}
+
 const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;

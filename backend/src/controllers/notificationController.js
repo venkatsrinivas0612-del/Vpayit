@@ -1,3 +1,6 @@
+const { runBillReminders } = require('../jobs/billReminders');
+const logger = require('../utils/logger');
+
 const getBillReminders = async (req, res, next) => {
   try {
     const today = new Date();
@@ -26,30 +29,35 @@ const getBillReminders = async (req, res, next) => {
       const amount = (bill.current_amount ?? 0).toFixed(2);
 
       let message;
-      if (diff === 0)      message = `${name} (\u00a3${amount}) is due today`;
-      else if (diff === 1) message = `${name} (\u00a3${amount}) is due tomorrow`;
-      else                 message = `${name} (\u00a3${amount}) is due in ${diff} days`;
+      if (diff === 0)      message = `${name} (£${amount}) is due today`;
+      else if (diff === 1) message = `${name} (£${amount}) is due tomorrow`;
+      else                 message = `${name} (£${amount}) is due in ${diff} days`;
 
       return {
-        bill_id:       bill.id,
-        supplier_name: name,
-        amount:        bill.current_amount,
-        due_date:      bill.next_due_date,
+        bill_id:        bill.id,
+        supplier_name:  name,
+        amount:         bill.current_amount,
+        due_date:       bill.next_due_date,
         days_until_due: diff,
-        urgency:       diff <= 1 ? 'urgent' : diff <= 3 ? 'warning' : 'info',
+        urgency:        diff <= 1 ? 'urgent' : diff <= 3 ? 'warning' : 'info',
         message,
       };
     });
 
-    res.json({
-      upcoming:          notifications,
-      count:             notifications.length,
-      email_would_send:  notifications.length > 0,
-      note:              'Email delivery via Resend/SendGrid — integration pending',
-    });
+    res.json({ upcoming: notifications, count: notifications.length });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { getBillReminders };
+const sendReminders = async (req, res, next) => {
+  try {
+    logger.info('sendReminders: job triggered via admin endpoint');
+    const result = await runBillReminders();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getBillReminders, sendReminders };
