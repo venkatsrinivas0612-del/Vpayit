@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, CheckCircle, Loader2, X, Mail, MapPin } from 'lucide-react';
+import { Zap, CheckCircle, Loader2, X, Mail, MapPin, Search, Shield, TrendingDown } from 'lucide-react';
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -16,77 +16,36 @@ async function sendContactForm(body) {
 }
 
 const PROBLEMS = [
-  {
-    stat: '4+ hrs',
-    title: 'Wasted every month',
-    desc: 'UK SMEs spend more than 4 hours per month managing bills manually — logging into supplier portals, chasing invoices, and reconciling payments.',
-    num: '01',
-  },
-  {
-    stat: '73%',
-    title: 'Overpaying right now',
-    desc: '73% of small businesses are overpaying on at least one utility or service. Most don\'t know it because they\'ve never had time to check.',
-    num: '02',
-  },
-  {
-    stat: '£1,900',
-    title: 'Average annual saving',
-    desc: 'The average UK SME can save £1,900 per year simply by switching to better deals that are already available on the market today.',
-    num: '03',
-  },
-  {
-    stat: 'Too slow',
-    title: 'Switching feels impossible',
-    desc: 'Most business owners know they should switch — but the process is time-consuming, confusing, and fragmented across dozens of comparison sites.',
-    num: '04',
-  },
+  { stat: '4+ hrs',  num: '01', title: 'Wasted every month',        desc: 'UK SMEs spend more than 4 hours per month managing bills manually — logging into supplier portals, chasing invoices, and reconciling payments.' },
+  { stat: '73%',     num: '02', title: 'Overpaying right now',       desc: "73% of small businesses are overpaying on at least one utility or service. Most don't know it because they've never had time to check." },
+  { stat: '£1,900',  num: '03', title: 'Average annual saving',      desc: 'The average UK SME can save £1,900 per year simply by switching to better deals that are already available on the market today.' },
+  { stat: 'Too slow',num: '04', title: 'Switching feels impossible', desc: "Most business owners know they should switch — but the process is time-consuming, confusing, and fragmented across dozens of comparison sites." },
 ];
 
 const VALUES = [
-  {
-    icon: '🔍',
-    title: 'Transparency',
-    desc: 'No hidden fees, no surprises. You always see exactly what you\'re paying and what you could save. We never take undisclosed commissions or rank suppliers by who pays us most.',
-  },
-  {
-    icon: '🛡️',
-    title: 'Security',
-    desc: 'Bank-grade encryption, FCA-regulated Open Banking, read-only access. Your bank credentials are never seen or stored by us. Your data is never sold to third parties.',
-  },
-  {
-    icon: '⚡',
-    title: 'Simplicity',
-    desc: 'Set up in 2 minutes. Vpayit does the hard work so you can focus on running your business. If managing your bills takes more than 5 minutes a month, we haven\'t done our job.',
-  },
+  { icon: Search,     color: '#818cf8', bg: 'rgba(99,102,241,0.12)',   title: 'Transparency',  desc: "No hidden fees, no surprises. You always see exactly what you're paying and what you could save. We never take undisclosed commissions." },
+  { icon: Shield,     color: '#34d399', bg: 'rgba(16,185,129,0.12)',   title: 'Security',      desc: "Bank-grade encryption, FCA-regulated Open Banking, read-only access. Your bank credentials are never seen or stored by us." },
+  { icon: Zap,        color: '#fbbf24', bg: 'rgba(251,191,36,0.12)',   title: 'Simplicity',    desc: "Set up in 2 minutes. Vpayit does the hard work so you can focus on running your business. Managing bills should take under 5 minutes a month." },
 ];
 
 const TEAM = [
   {
-    initials: 'VS',
-    name: 'Venkat Srinivas',
-    role: 'CEO & Founder',
+    initials: 'VS', name: 'Venkat Srinivas', role: 'CEO & Founder', placeholder: false,
     bio: 'MSc Finance (Banking), University of Westminster. Background in financial services and investment analysis. Passionate about using technology to level the playing field for small businesses.',
     tags: ['Financial Services', 'Investment Analysis', 'Fintech'],
-    avatarClass: 'bg-gradient-to-br from-blue-600 to-purple-600',
-    placeholder: false,
+    gradient: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
   },
   {
-    initials: '?',
-    name: 'Open Role',
-    role: 'Chief Technology Officer',
-    bio: 'We\'re looking for a CTO to lead engineering. Ideally experienced in fintech, Open Banking, and scaling SaaS products for UK SMEs.',
+    initials: '?', name: 'Open Role', role: 'Chief Technology Officer', placeholder: true,
+    bio: "We're looking for a CTO to lead engineering. Ideally experienced in fintech, Open Banking, and scaling SaaS products for UK SMEs.",
     tags: ['Hiring Soon'],
-    avatarClass: 'bg-slate-300',
-    placeholder: true,
+    gradient: 'rgba(255,255,255,0.08)',
   },
   {
-    initials: '?',
-    name: 'Open Role',
-    role: 'Head of Product',
-    bio: 'Coming soon — we\'re building a world-class product team. Interested in joining Vpayit? We\'d love to hear from you.',
+    initials: '?', name: 'Open Role', role: 'Head of Product', placeholder: true,
+    bio: "Coming soon — we're building a world-class product team. Interested in joining Vpayit? We'd love to hear from you.",
     tags: ['Coming Soon'],
-    avatarClass: 'bg-slate-300',
-    placeholder: true,
+    gradient: 'rgba(255,255,255,0.08)',
   },
 ];
 
@@ -111,103 +70,117 @@ function ContactModal({ onClose }) {
     }
   }
 
-  // Close on backdrop click or ESC
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
   }, [onClose]);
+
+  const inputStyle = {
+    width: '100%', padding: '10px 14px', borderRadius: 10,
+    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+    color: '#f1f5f9', fontSize: 14, outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s', boxSizing: 'border-box',
+  };
+  const labelStyle = { display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(148,163,184,0.8)', marginBottom: 5 };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+      }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl">
-        {/* Modal header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+      <div style={{
+        width: '100%', maxWidth: 480,
+        background: 'rgba(15,15,35,0.98)', backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20,
+        boxShadow: '0 0 80px rgba(99,102,241,0.2)',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Get in touch</h3>
-            <p className="text-sm text-slate-500 mt-0.5">We'll reply within 1 business day.</p>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 }}>Get in touch</h3>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)' }}>We'll reply within 1 business day.</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            style={{
+              width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.06)',
+              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(148,163,184,0.7)',
+            }}
           >
-            <X className="w-4 h-4" />
+            <X size={14} />
           </button>
         </div>
 
-        {/* Modal body */}
-        <div className="px-6 py-5">
+        <div style={{ padding: '20px 24px 24px' }}>
           {status === 'success' ? (
-            <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
-              <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12, padding: 16,
+              background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)',
+              borderRadius: 12,
+            }}>
+              <CheckCircle size={18} color="#34d399" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
               <div>
-                <p className="font-semibold">Message sent!</p>
-                <p className="text-sm text-green-600 mt-0.5">We'll get back to you within 1 business day.</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#34d399', marginBottom: 3 }}>Message sent!</p>
+                <p style={{ fontSize: 13, color: 'rgba(52,211,153,0.7)' }}>We'll get back to you within 1 business day.</p>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Name *</label>
-                  <input
-                    required
-                    type="text"
-                    value={form.name}
-                    onChange={e => setField('name', e.target.value)}
-                    placeholder="Your name"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <label style={labelStyle}>Name *</label>
+                  <input required type="text" value={form.name} onChange={e => setField('name', e.target.value)} placeholder="Your name" style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                    onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Email *</label>
-                  <input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={e => setField('email', e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <label style={labelStyle}>Email *</label>
+                  <input required type="email" value={form.email} onChange={e => setField('email', e.target.value)} placeholder="you@company.com" style={inputStyle}
+                    onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                    onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
-                <input
-                  type="text"
-                  value={form.company}
-                  onChange={e => setField('company', e.target.value)}
-                  placeholder="Your company name"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <label style={labelStyle}>Company</label>
+                <input type="text" value={form.company} onChange={e => setField('company', e.target.value)} placeholder="Your company name" style={inputStyle}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Message *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={form.message}
-                  onChange={e => setField('message', e.target.value)}
-                  placeholder="Tell us how we can help…"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                <label style={labelStyle}>Message *</label>
+                <textarea required rows={4} value={form.message} onChange={e => setField('message', e.target.value)} placeholder="Tell us how we can help…"
+                  style={{ ...inputStyle, resize: 'none' }}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
               {status === 'error' && (
-                <p className="text-sm text-red-600">{errMsg}</p>
+                <p style={{ fontSize: 13, color: '#f87171' }}>{errMsg}</p>
               )}
               <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg transition-colors disabled:opacity-60"
+                type="submit" disabled={status === 'loading'}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '11px 24px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  boxShadow: '0 0 20px rgba(99,102,241,0.35)',
+                  opacity: status === 'loading' ? 0.7 : 1,
+                }}
               >
-                {status === 'loading' && <Loader2 className="w-4 h-4 animate-spin" />}
+                {status === 'loading' && <Loader2 size={14} className="animate-spin" />}
                 {status === 'loading' ? 'Sending…' : 'Send message'}
               </button>
             </form>
@@ -218,270 +191,371 @@ function ContactModal({ onClose }) {
   );
 }
 
+const sectionLabel = { fontSize: 11, fontWeight: 700, color: '#818cf8', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12 };
+const sectionTitle = {
+  fontSize: 'clamp(1.6rem,4vw,2.2rem)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2,
+  background: 'linear-gradient(135deg, #f1f5f9 0%, rgba(241,245,249,0.75) 100%)',
+  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+};
+const glassCard = {
+  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 20, backdropFilter: 'blur(20px)',
+};
+
 export default function About() {
   useEffect(() => { document.title = 'About | Vpayit'; }, []);
   const [showContact, setShowContact] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{ minHeight: '100vh', background: '#060c1a', color: '#e2e8f0', fontFamily: 'system-ui, sans-serif' }}>
       {showContact && <ContactModal onClose={() => setShowContact(false)} />}
 
+      {/* Ambient */}
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        background: `
+          radial-gradient(ellipse 70% 50% at 15% 0%, rgba(99,102,241,0.1), transparent),
+          radial-gradient(ellipse 50% 40% at 85% 20%, rgba(168,85,247,0.07), transparent)
+        `,
+      }} />
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+      }} />
+
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 md:px-12 h-16 border-b border-slate-100">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-white" />
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 2rem', height: 64,
+        background: 'rgba(6,12,26,0.85)', backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 16px rgba(99,102,241,0.4)',
+          }}>
+            <Zap size={16} color="white" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-lg text-slate-900">Vpayit</span>
+          <span style={{ fontWeight: 700, fontSize: 18, color: '#f1f5f9' }}>Vpayit</span>
         </Link>
-        <div className="flex items-center gap-3">
-          <Link to="/pricing" className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors">
-            Pricing
-          </Link>
-          <Link to="/auth/login" className="text-sm font-medium text-slate-500 hover:text-blue-600 px-3 py-2 transition-colors">
-            Log in
-          </Link>
-          <Link
-            to="/auth/register"
-            className="text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Get started
-          </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Link to="/pricing" style={{ fontSize: 14, fontWeight: 500, color: 'rgba(148,163,184,0.8)', padding: '8px 12px', textDecoration: 'none' }}>Pricing</Link>
+          <Link to="/auth/login" style={{ fontSize: 14, fontWeight: 500, color: 'rgba(148,163,184,0.8)', padding: '8px 12px', textDecoration: 'none' }}>Log in</Link>
+          <Link to="/auth/register" style={{
+            fontSize: 14, fontWeight: 600, color: '#fff', padding: '8px 16px',
+            borderRadius: 8, textDecoration: 'none',
+            background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            boxShadow: '0 0 16px rgba(99,102,241,0.35)',
+          }}>Get started</Link>
         </div>
       </nav>
 
-      {/* HERO */}
-      <div className="relative overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_30%,rgba(37,99,235,0.05),transparent)]" />
-        <div className="relative max-w-4xl mx-auto px-6 pt-24 pb-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-sm font-semibold text-blue-700 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            Our story
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* HERO */}
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: '80px 24px 72px', textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+            borderRadius: 999, padding: '6px 16px', marginBottom: 28,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#818cf8' }}>Our story</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-6">
-            Making business bills <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">simple.</span>
+          <h1 style={{
+            fontSize: 'clamp(2.2rem, 6vw, 3.5rem)', fontWeight: 800, letterSpacing: '-0.04em',
+            lineHeight: 1.1, marginBottom: 20,
+          }}>
+            Making business bills{' '}
+            <span style={{
+              background: 'linear-gradient(135deg,#818cf8,#c084fc)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>simple.</span>
           </h1>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          <p style={{ fontSize: 18, color: 'rgba(148,163,184,0.85)', lineHeight: 1.7, maxWidth: 560, margin: '0 auto' }}>
             Vpayit helps UK small businesses take control of their recurring bills, find better deals, and save thousands every year.
           </p>
         </div>
-      </div>
 
-      {/* OUR STORY */}
-      <div className="bg-slate-50 border-y border-slate-100">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">Our story</p>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-6">Born from a simple frustration</h2>
-              <p className="text-slate-600 leading-relaxed mb-5">
-                Founded in 2025, Vpayit was born from a simple frustration — UK small businesses waste hours every month managing bills and overpay by thousands because comparing suppliers is painful. We built Vpayit to fix that.
-              </p>
-              <p className="text-slate-600 leading-relaxed">
-                Using Open Banking technology, Vpayit automatically connects to your business bank account, detects every recurring payment, and compares your costs against 30+ UK suppliers. No spreadsheets, no phone calls, no hassle.
-              </p>
-            </div>
-            {/* Mini dashboard illustration */}
-            <div className="space-y-3">
-              {[
-                { icon: '⚡', name: 'British Gas', sub: 'Energy · Monthly', val: '£342', valColor: 'text-amber-600' },
-                { icon: '🏛️', name: 'Business Rates', sub: 'Annual · Hackney Council', val: '£485', valColor: 'text-slate-800' },
-                { icon: '🛡️', name: 'Aviva Insurance', sub: 'Renews in 45 days', val: '£156', valColor: 'text-red-600' },
-              ].map(row => (
-                <div key={row.name} className="flex items-center gap-4 bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl shrink-0">{row.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900">{row.name}</p>
-                    <p className="text-xs text-slate-400">{row.sub}</p>
+        {/* OUR STORY */}
+        <div style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 56, alignItems: 'center' }}>
+              <div>
+                <p style={sectionLabel}>Our story</p>
+                <h2 style={{ ...sectionTitle, marginBottom: 20 }}>Born from a simple frustration</h2>
+                <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.85)', lineHeight: 1.75, marginBottom: 16 }}>
+                  Founded in 2025, Vpayit was born from a simple frustration — UK small businesses waste hours every month managing bills and overpay by thousands because comparing suppliers is painful.
+                </p>
+                <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.85)', lineHeight: 1.75 }}>
+                  Using Open Banking technology, Vpayit automatically connects to your business bank account, detects every recurring payment, and compares your costs against 30+ UK suppliers.
+                </p>
+              </div>
+              {/* Mini dashboard illustration */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { icon: Zap, iconColor: '#fbbf24', iconBg: 'rgba(251,191,36,0.1)', name: 'British Gas', sub: 'Energy · Monthly', val: '£342', valColor: '#fbbf24' },
+                  { icon: Shield, iconColor: '#818cf8', iconBg: 'rgba(99,102,241,0.1)', name: 'Business Rates', sub: 'Annual · Hackney Council', val: '£485', valColor: '#e2e8f0' },
+                  { icon: Shield, iconColor: '#f87171', iconBg: 'rgba(239,68,68,0.1)', name: 'Aviva Insurance', sub: 'Renews in 45 days', val: '£156', valColor: '#f87171' },
+                ].map(({ icon: Icon, iconColor, iconBg, name, sub, val, valColor }) => (
+                  <div key={name} style={{
+                    display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+                    ...glassCard,
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={16} color={iconColor} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 2 }}>{name}</p>
+                      <p style={{ fontSize: 11, color: 'rgba(100,116,139,0.8)' }}>{sub}</p>
+                    </div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: valColor, flexShrink: 0 }}>{val}</p>
                   </div>
-                  <p className={`text-base font-bold shrink-0 ${row.valColor}`}>{row.val}</p>
+                ))}
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+                  background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)',
+                  borderRadius: 16,
+                }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <TrendingDown size={16} color="#34d399" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#34d399', marginBottom: 2 }}>3 savings found</p>
+                    <p style={{ fontSize: 11, color: 'rgba(52,211,153,0.7)', fontWeight: 500 }}>You could save £1,240/year</p>
+                  </div>
+                  <span style={{ color: '#34d399', fontSize: 16, fontWeight: 700 }}>→</span>
                 </div>
-              ))}
-              <div className="flex items-center gap-4 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
-                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-xl shrink-0">💰</div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-900">3 savings found</p>
-                  <p className="text-xs text-green-600 font-medium">You could save £1,240/year</p>
-                </div>
-                <p className="text-green-600 font-bold">→</p>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* THE PROBLEM WE SOLVE */}
-      <div className="max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">The problem we solve</p>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">UK SMEs are leaving money on the table</h2>
-          <p className="text-slate-500 max-w-xl mx-auto">The numbers are stark — and the solution has been missing until now.</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {PROBLEMS.map((p) => (
-            <div key={p.num} className="relative bg-white border border-slate-200 rounded-2xl p-8 overflow-hidden group hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all">
-              <span className="absolute top-4 right-5 text-6xl font-black text-slate-50 select-none leading-none group-hover:text-blue-50 transition-colors">
-                {p.num}
-              </span>
-              <p className="text-4xl font-extrabold text-blue-600 tracking-tight mb-2">{p.stat}</p>
-              <h3 className="text-base font-bold text-slate-900 mb-2">{p.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* BUSINESS MODEL */}
-      <div className="bg-slate-50 border-y border-slate-100">
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">How we work</p>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-8">Aligned with your interests</h2>
-          <p className="text-lg text-slate-600 leading-relaxed mb-5">
-            Vpayit is free for basic use. We earn revenue when we successfully help you switch to a better deal — the new supplier pays us a referral fee. You save money, we earn a commission. Everyone wins.
-          </p>
-          <p className="text-lg text-slate-600 leading-relaxed mb-10">
-            We never charge you to save money. Our interests are aligned with yours.
-          </p>
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl px-8 py-6 text-left">
-            <p className="text-blue-800 leading-relaxed">
-              <span className="text-xl mr-2">💡</span>
-              <strong>No conflicts of interest.</strong> We only recommend a switch when the saving is genuine. We show you the numbers transparently so you can decide — no pressure, no hidden commissions, no sponsored results.
+        {/* THE PROBLEM */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <p style={sectionLabel}>The problem we solve</p>
+            <h2 style={{ ...sectionTitle, marginBottom: 12 }}>UK SMEs are leaving money on the table</h2>
+            <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.75)', maxWidth: 480, margin: '0 auto' }}>
+              The numbers are stark — and the solution has been missing until now.
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* VISION & MISSION */}
-      <div className="bg-slate-900">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-xs font-bold text-slate-500 tracking-widest uppercase mb-4">Our purpose</p>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">Why we exist</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-slate-800 rounded-2xl p-10 relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-32 h-32 rounded-full bg-white/5 translate-x-8 translate-y-8" />
-              <p className="text-xs font-bold text-slate-500 tracking-widest uppercase mb-5">Vision</p>
-              <h3 className="text-2xl font-extrabold text-white leading-snug">
-                A world where no small business overpays for essential services
-              </h3>
-            </div>
-            <div className="bg-gradient-to-br from-blue-800 to-blue-600 rounded-2xl p-10 relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 w-32 h-32 rounded-full bg-white/10 translate-x-8 translate-y-8" />
-              <p className="text-xs font-bold text-blue-200/60 tracking-widest uppercase mb-5">Mission</p>
-              <h3 className="text-2xl font-extrabold text-white leading-snug">
-                To give every UK SME the tools to manage, track, and reduce their business bills — automatically
-              </h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* OUR VALUES */}
-      <div className="max-w-5xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">Our values</p>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">What we stand for</h2>
-          <p className="text-slate-500 max-w-lg mx-auto">Three principles guide everything we build and every decision we make.</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {VALUES.map(({ icon, title, desc }) => (
-            <div key={title} className="bg-white border border-slate-200 rounded-2xl p-8 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all group">
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl mb-5 group-hover:bg-blue-100 transition-colors">
-                {icon}
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* TEAM */}
-      <div className="bg-slate-50 border-y border-slate-100">
-        <div className="max-w-5xl mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">The team</p>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">People building Vpayit</h2>
-            <p className="text-slate-500 max-w-lg mx-auto">A small, focused team with deep experience in financial services and technology.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {TEAM.map(({ initials, name, role, bio, tags, avatarClass, placeholder }) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {PROBLEMS.map((p) => (
               <div
-                key={role}
-                className={`rounded-2xl p-8 text-center border transition-all ${
-                  placeholder
-                    ? 'bg-white border-dashed border-slate-300'
-                    : 'bg-white border-blue-100 shadow-sm hover:shadow-md'
-                }`}
+                key={p.num}
+                style={{ ...glassCard, padding: 28, position: 'relative', overflow: 'hidden', cursor: 'default', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.25)'; e.currentTarget.style.boxShadow = '0 0 24px rgba(99,102,241,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
-                <div className={`w-16 h-16 rounded-full ${avatarClass} flex items-center justify-center text-2xl font-extrabold text-white mx-auto mb-5`}>
-                  {initials}
-                </div>
-                <p className={`text-lg font-bold mb-1 ${placeholder ? 'text-slate-400' : 'text-slate-900'}`}>{name}</p>
-                <p className={`text-sm font-semibold mb-4 ${placeholder ? 'text-slate-400' : 'text-blue-600'}`}>{role}</p>
-                <p className={`text-sm leading-relaxed mb-5 ${placeholder ? 'text-slate-400 italic' : 'text-slate-500'}`}>{bio}</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {tags.map(tag => (
-                    <span
-                      key={tag}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        placeholder
-                          ? 'bg-slate-100 text-slate-400'
-                          : 'bg-blue-50 text-blue-700'
-                      }`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <span style={{
+                  position: 'absolute', top: 8, right: 14,
+                  fontSize: 52, fontWeight: 900, color: 'rgba(255,255,255,0.03)',
+                  lineHeight: 1, userSelect: 'none',
+                }}>{p.num}</span>
+                <p style={{
+                  fontSize: 32, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8,
+                  background: 'linear-gradient(135deg,#818cf8,#c084fc)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                }}>{p.stat}</p>
+                <h3 style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>{p.title}</h3>
+                <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.75)', lineHeight: 1.65 }}>{p.desc}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* CONTACT */}
-      <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-        <p className="text-xs font-bold text-blue-600 tracking-widest uppercase mb-4">Get in touch</p>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-4">We'd love to hear from you</h2>
-        <p className="text-slate-500 mb-12 max-w-md mx-auto leading-relaxed">
-          Whether you have a question, a partnership idea, or just want to say hello — our inbox is always open.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-12">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-              <Mail className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="text-left">
-              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Email</p>
-              <a href="mailto:hello@vpayit.co.uk" className="text-sm font-semibold text-blue-600 hover:underline">
-                hello@vpayit.co.uk
-              </a>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="text-left">
-              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Location</p>
-              <p className="text-sm font-semibold text-slate-700">London, UK</p>
+        {/* BUSINESS MODEL */}
+        <div style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ maxWidth: 680, margin: '0 auto', padding: '72px 24px', textAlign: 'center' }}>
+            <p style={sectionLabel}>How we work</p>
+            <h2 style={{ ...sectionTitle, marginBottom: 24 }}>Aligned with your interests</h2>
+            <p style={{ fontSize: 16, color: 'rgba(148,163,184,0.85)', lineHeight: 1.75, marginBottom: 16 }}>
+              Vpayit is free for basic use. We earn revenue when we successfully help you switch to a better deal — the new supplier pays us a referral fee. You save money, we earn a commission. Everyone wins.
+            </p>
+            <p style={{ fontSize: 16, color: 'rgba(148,163,184,0.85)', lineHeight: 1.75, marginBottom: 32 }}>
+              We never charge you to save money. Our interests are aligned with yours.
+            </p>
+            <div style={{
+              background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+              borderRadius: 16, padding: '20px 24px', textAlign: 'left',
+              display: 'flex', alignItems: 'flex-start', gap: 14,
+            }}>
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Zap size={16} color="#818cf8" />
+              </div>
+              <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.9)', lineHeight: 1.65 }}>
+                <strong style={{ color: '#818cf8' }}>No conflicts of interest.</strong> We only recommend a switch when the saving is genuine. We show you the numbers transparently so you can decide — no pressure, no hidden commissions, no sponsored results.
+              </p>
             </div>
           </div>
         </div>
-        <button
-          onClick={() => setShowContact(true)}
-          className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-base transition-all hover:shadow-lg hover:shadow-blue-100 hover:-translate-y-0.5"
-        >
-          Send us a message →
-        </button>
+
+        {/* VISION & MISSION */}
+        <div style={{ background: 'rgba(6,12,26,0.5)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 24px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <p style={{ ...sectionLabel, color: 'rgba(148,163,184,0.5)' }}>Our purpose</p>
+              <h2 style={{ ...sectionTitle }}>Why we exist</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+              <div style={{
+                ...glassCard, padding: 40, position: 'relative', overflow: 'hidden',
+                background: 'rgba(255,255,255,0.03)',
+              }}>
+                <div style={{ position: 'absolute', bottom: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.02)' }} />
+                <p style={{ ...sectionLabel, color: 'rgba(148,163,184,0.4)' }}>Vision</p>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.35 }}>
+                  A world where no small business overpays for essential services
+                </h3>
+              </div>
+              <div style={{
+                padding: 40, borderRadius: 20, position: 'relative', overflow: 'hidden',
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
+                border: '1px solid rgba(99,102,241,0.25)',
+              }}>
+                <div style={{ position: 'absolute', bottom: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(99,102,241,0.08)' }} />
+                <p style={{ ...sectionLabel, color: 'rgba(129,140,248,0.6)' }}>Mission</p>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.35 }}>
+                  To give every UK SME the tools to manage, track, and reduce their business bills — automatically
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* VALUES */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <p style={sectionLabel}>Our values</p>
+            <h2 style={{ ...sectionTitle, marginBottom: 12 }}>What we stand for</h2>
+            <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.7)', maxWidth: 440, margin: '0 auto' }}>
+              Three principles guide everything we build and every decision we make.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {VALUES.map(({ icon: Icon, color, bg, title, desc }) => (
+              <div
+                key={title}
+                style={{ ...glassCard, padding: 28, transition: 'border-color 0.2s, box-shadow 0.2s', cursor: 'default' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.2)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(99,102,241,0.07)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{
+                  width: 48, height: 48, borderRadius: 12, background: bg,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+                }}>
+                  <Icon size={20} color={color} />
+                </div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>{title}</h3>
+                <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.8)', lineHeight: 1.7 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* TEAM */}
+        <div style={{ background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 24px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 48 }}>
+              <p style={sectionLabel}>The team</p>
+              <h2 style={{ ...sectionTitle, marginBottom: 12 }}>People building Vpayit</h2>
+              <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.7)', maxWidth: 440, margin: '0 auto' }}>
+                A small, focused team with deep experience in financial services and technology.
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+              {TEAM.map(({ initials, name, role, bio, tags, gradient, placeholder }) => (
+                <div
+                  key={role}
+                  style={{
+                    ...glassCard, padding: 28, textAlign: 'center',
+                    borderStyle: placeholder ? 'dashed' : 'solid',
+                    borderColor: placeholder ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.07)',
+                  }}
+                >
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%',
+                    background: gradient,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    fontSize: 22, fontWeight: 700, color: placeholder ? 'rgba(148,163,184,0.4)' : '#fff',
+                    boxShadow: placeholder ? 'none' : '0 0 24px rgba(99,102,241,0.3)',
+                  }}>
+                    {initials}
+                  </div>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: placeholder ? 'rgba(100,116,139,0.6)' : '#f1f5f9', marginBottom: 4 }}>{name}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: placeholder ? 'rgba(100,116,139,0.5)' : '#818cf8', marginBottom: 14 }}>{role}</p>
+                  <p style={{ fontSize: 12, color: placeholder ? 'rgba(100,116,139,0.5)' : 'rgba(148,163,184,0.75)', lineHeight: 1.65, marginBottom: 16, fontStyle: placeholder ? 'italic' : 'normal' }}>{bio}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                    {tags.map(tag => (
+                      <span key={tag} style={{
+                        padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                        background: placeholder ? 'rgba(255,255,255,0.04)' : 'rgba(99,102,241,0.12)',
+                        color: placeholder ? 'rgba(100,116,139,0.5)' : '#818cf8',
+                        border: `1px solid ${placeholder ? 'rgba(255,255,255,0.06)' : 'rgba(99,102,241,0.2)'}`,
+                      }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* CONTACT */}
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '72px 24px', textAlign: 'center' }}>
+          <p style={sectionLabel}>Get in touch</p>
+          <h2 style={{ ...sectionTitle, marginBottom: 12 }}>We'd love to hear from you</h2>
+          <p style={{ fontSize: 15, color: 'rgba(148,163,184,0.75)', marginBottom: 48, lineHeight: 1.7, maxWidth: 400, margin: '0 auto 48px' }}>
+            Whether you have a question, a partnership idea, or just want to say hello — our inbox is always open.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 32, marginBottom: 40 }}>
+            {[
+              { icon: Mail, color: '#818cf8', bg: 'rgba(99,102,241,0.12)', label: 'Email', value: 'hello@vpayit.co.uk', href: 'mailto:hello@vpayit.co.uk' },
+              { icon: MapPin, color: '#34d399', bg: 'rgba(16,185,129,0.12)', label: 'Location', value: 'London, UK', href: null },
+            ].map(({ icon: Icon, color, bg, label, value, href }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 11, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={18} color={color} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(100,116,139,0.7)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>{label}</p>
+                  {href ? (
+                    <a href={href} style={{ fontSize: 14, fontWeight: 600, color: '#818cf8', textDecoration: 'none' }}>{value}</a>
+                  ) : (
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(226,232,240,0.85)' }}>{value}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowContact(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 32px', borderRadius: 12, border: 'none', cursor: 'pointer',
+              background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+              color: '#fff', fontSize: 15, fontWeight: 600,
+              boxShadow: '0 0 24px rgba(99,102,241,0.4)',
+              transition: 'box-shadow 0.2s, transform 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 40px rgba(99,102,241,0.65)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 24px rgba(99,102,241,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            Send us a message →
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-100 py-6 text-center text-xs text-slate-400">
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px', textAlign: 'center', fontSize: 12, color: 'rgba(100,116,139,0.7)' }}>
         © {new Date().getFullYear()} Vpayit Ltd ·{' '}
-        <a href="https://vpayit.co.uk" className="hover:text-blue-600">vpayit.co.uk</a>
+        <a href="https://vpayit.co.uk" style={{ color: '#818cf8', textDecoration: 'none' }}>vpayit.co.uk</a>
       </div>
     </div>
   );

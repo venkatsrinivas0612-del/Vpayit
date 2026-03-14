@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Zap, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const BUSINESS_TYPES = [
@@ -48,22 +48,52 @@ export default function Register() {
     }
   }
 
+  const inputStyle = {
+    width: '100%', padding: '11px 16px', borderRadius: 10,
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    color: '#f1f5f9', fontSize: 14, outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+    boxSizing: 'border-box',
+  };
+  const labelStyle = { display: 'block', fontSize: 13, fontWeight: 600, color: 'rgba(148,163,184,0.9)', marginBottom: 6 };
+
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      <div style={{
+        minHeight: '100vh', background: '#060c1a',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}>
+        <div style={{
+          width: '100%', maxWidth: 440,
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 20, padding: 40, textAlign: 'center',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Check your email</h2>
-          <p className="text-slate-500 text-sm mb-6">
-            We sent a confirmation link to <strong>{form.email}</strong>. Click it to activate your account.
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>Check your email</h2>
+          <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', lineHeight: 1.7, marginBottom: 28 }}>
+            We sent a confirmation link to <strong style={{ color: '#818cf8' }}>{form.email}</strong>. Click it to activate your account.
           </p>
           <Link
             to="/auth/login"
-            className="inline-flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: '12px 24px', borderRadius: 12, border: 'none',
+              background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+              color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none',
+              boxShadow: '0 0 24px rgba(99,102,241,0.4)',
+            }}
           >
             Back to sign in
           </Link>
@@ -73,124 +103,166 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-white" />
+    <div style={{
+      minHeight: '100vh', background: '#060c1a',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Ambient glows */}
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none',
+        background: `
+          radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,0.12), transparent),
+          radial-gradient(ellipse 50% 40% at 80% 80%, rgba(168,85,247,0.08), transparent)
+        `,
+      }} />
+      <div style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+      }} />
+
+      <div style={{ width: '100%', maxWidth: 460, position: 'relative', zIndex: 1 }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 32 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 10,
+            background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 20px rgba(99,102,241,0.45)',
+          }}>
+            <Zap size={20} color="white" strokeWidth={2.5} />
           </div>
-          <span className="text-2xl font-bold text-white">Vpayit</span>
+          <span style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9' }}>Vpayit</span>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Create your account</h1>
-          <p className="text-slate-500 text-sm mb-6">Manage all your business bills in one place</p>
+        {/* Card */}
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 20, padding: 36,
+        }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 }}>Create your account</h1>
+          <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.7)', marginBottom: 28 }}>
+            Manage all your business bills in one place
+          </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div style={{
+              marginBottom: 20, padding: '12px 16px',
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 10, fontSize: 13, color: '#f87171',
+            }}>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Business name <span className="text-red-500">*</span>
-              </label>
+              <label style={labelStyle}>Business name <span style={{ color: '#f87171' }}>*</span></label>
               <input
-                type="text"
-                required
-                value={form.business_name}
-                onChange={set('business_name')}
+                type="text" required value={form.business_name} onChange={set('business_name')}
                 placeholder="Acme Ltd"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Business type
-                </label>
+                <label style={labelStyle}>Business type</label>
                 <select
-                  value={form.business_type}
-                  onChange={set('business_type')}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition bg-white"
+                  value={form.business_type} onChange={set('business_type')}
+                  style={{ ...inputStyle, cursor: 'pointer' }}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                 >
                   <option value="">Select…</option>
-                  {BUSINESS_TYPES.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
+                  {BUSINESS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Postcode
-                </label>
+                <label style={labelStyle}>Postcode</label>
                 <input
-                  type="text"
-                  value={form.postcode}
-                  onChange={set('postcode')}
+                  type="text" value={form.postcode} onChange={set('postcode')}
                   placeholder="EC2A 4NE"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
+                  style={inputStyle}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email address <span className="text-red-500">*</span>
-              </label>
+              <label style={labelStyle}>Email address <span style={{ color: '#f87171' }}>*</span></label>
               <input
-                type="email"
-                required
-                value={form.email}
-                onChange={set('email')}
+                type="email" required value={form.email} onChange={set('email')}
                 placeholder="you@company.co.uk"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
+              <label style={labelStyle}>Password <span style={{ color: '#f87171' }}>*</span></label>
+              <div style={{ position: 'relative' }}>
                 <input
-                  type={showPwd ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={set('password')}
+                  type={showPwd ? 'text' : 'password'} required value={form.password} onChange={set('password')}
                   placeholder="Min. 8 characters"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition pr-10"
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
                 />
                 <button
-                  type="button"
-                  onClick={() => setShowPwd(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  type="button" onClick={() => setShowPwd(v => !v)}
+                  style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                    color: 'rgba(100,116,139,0.7)',
+                  }}
                 >
-                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm"
+              type="submit" disabled={loading}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '13px 24px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                color: '#fff', fontSize: 14, fontWeight: 600,
+                boxShadow: '0 0 24px rgba(99,102,241,0.4)',
+                opacity: loading ? 0.7 : 1,
+                transition: 'box-shadow 0.2s, transform 0.15s',
+                marginTop: 4,
+              }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.boxShadow = '0 0 36px rgba(99,102,241,0.65)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 24px rgba(99,102,241,0.4)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
               {loading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <p style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: 'rgba(148,163,184,0.7)' }}>
             Already have an account?{' '}
-            <Link to="/auth/login" className="text-blue-600 font-medium hover:underline">
+            <Link to="/auth/login" style={{ color: '#818cf8', fontWeight: 600, textDecoration: 'none' }}>
               Sign in
             </Link>
           </p>
         </div>
+
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(100,116,139,0.6)', marginTop: 20 }}>
+          By creating an account you agree to our{' '}
+          <a href="https://vpayit.co.uk/terms.html" style={{ color: '#818cf8', textDecoration: 'none' }}>Terms</a>
+          {' '}and{' '}
+          <a href="https://vpayit.co.uk/privacy.html" style={{ color: '#818cf8', textDecoration: 'none' }}>Privacy Policy</a>
+        </p>
       </div>
     </div>
   );
