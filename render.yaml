@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: vpayit-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # ── Fill these in the Render dashboard ──────────────────────
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://moonlit-gelato-dd1708.netlify.app
+      # ── TrueLayer (update redirect URI to match Render URL) ─────
+      - key: TRUELAYER_CLIENT_ID
+        sync: false
+      - key: TRUELAYER_CLIENT_SECRET
+        sync: false
+      - key: TRUELAYER_REDIRECT_URI
+        sync: false
+      # ── Stripe ──────────────────────────────────────────────────
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_BUSINESS
+        sync: false
+      # ── Resend email ────────────────────────────────────────────
+      - key: RESEND_API_KEY
+        sync: false
+      # ── Admin ───────────────────────────────────────────────────
+      - key: ADMIN_SECRET
+        sync: false
