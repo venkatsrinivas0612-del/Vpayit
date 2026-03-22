@@ -34,22 +34,22 @@ const FREQ_LABELS = {
   annual: 'Annual', weekly: 'Weekly', irregular: 'Irregular',
 };
 
-const CATEGORY_STYLES = {
-  energy:   { background: 'rgba(251,146,60,0.15)',  color: '#fb923c',  border: '1px solid rgba(251,146,60,0.2)'  },
-  water:    { background: 'rgba(56,189,248,0.12)',  color: '#38bdf8',  border: '1px solid rgba(56,189,248,0.2)'  },
-  telecoms: { background: 'rgba(192,132,252,0.12)', color: '#c084fc',  border: '1px solid rgba(192,132,252,0.2)' },
-  insurance:{ background: 'rgba(52,211,153,0.12)',  color: '#34d399',  border: '1px solid rgba(52,211,153,0.2)'  },
-  software: { background: 'rgba(129,140,248,0.12)', color: '#818cf8',  border: '1px solid rgba(129,140,248,0.2)' },
-  rates:    { background: 'rgba(248,113,113,0.12)', color: '#f87171',  border: '1px solid rgba(248,113,113,0.2)' },
-  rent:     { background: 'rgba(251,191,36,0.12)',  color: '#fbbf24',  border: '1px solid rgba(251,191,36,0.2)'  },
-  waste:    { background: 'rgba(163,230,53,0.12)',  color: '#a3e635',  border: '1px solid rgba(163,230,53,0.2)'  },
-  default:  { background: 'rgba(100,116,139,0.12)', color: '#94a3b8',  border: '1px solid rgba(100,116,139,0.2)' },
+const CATEGORY_COLOURS = {
+  energy:   'bg-orange-100 text-orange-700',
+  water:    'bg-blue-100 text-blue-700',
+  telecoms: 'bg-purple-100 text-purple-700',
+  insurance:'bg-green-100 text-green-700',
+  software: 'bg-indigo-100 text-indigo-700',
+  rates:    'bg-red-100 text-red-700',
+  rent:     'bg-amber-100 text-amber-700',
+  waste:    'bg-lime-100 text-lime-700',
+  default:  'bg-slate-100 text-slate-600',
 };
 
 function Badge({ category }) {
-  const style = CATEGORY_STYLES[category] || CATEGORY_STYLES.default;
+  const cls = CATEGORY_COLOURS[category] || CATEGORY_COLOURS.default;
   return (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={style}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
       {CATEGORY_LABELS[category] || category}
     </span>
   );
