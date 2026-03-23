@@ -20,50 +20,50 @@ const FEATURES = [
     icon: Receipt,
     color: 'text-blue-600',
     bg: 'bg-blue-50',
-    title: 'Auto Bill Detection',
-    desc: 'Connects securely via Open Banking to scan your transactions and automatically identifies every recurring bill — no manual entry, ever.',
-  },
-  {
-    icon: Shield,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    title: 'Open Banking Security',
-    desc: 'FCA-regulated TrueLayer integration means read-only access to your data — Vpayit can never move your money. Bank-grade 256-bit encryption.',
+    title: 'Automatic bill detection',
+    desc: 'Connects to your bank and identifies every recurring payment — energy, water, insurance, telecoms, software and more.',
   },
   {
     icon: TrendingUp,
     color: 'text-amber-600',
     bg: 'bg-amber-50',
-    title: 'Savings Finder',
-    desc: 'Compares your current tariffs against the whole UK market and surfaces the best switch with one click.',
+    title: 'Smart savings finder',
+    desc: 'Compares your bills against 30+ UK suppliers to find better deals. Average savings of £800 to £2,000 per year.',
   },
   {
     icon: BarChart3,
     color: 'text-violet-600',
     bg: 'bg-violet-50',
-    title: 'Spending Reports',
-    desc: 'Clear monthly and annual reports showing exactly where your business money goes — ready for accountants and HMRC.',
+    title: 'Spending analytics',
+    desc: 'Track your business spending with monthly reports, category breakdowns, and trend analysis.',
+  },
+  {
+    icon: Shield,
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    title: 'Bill alerts and reminders',
+    desc: 'Get notified before bills are due so you never miss a payment or overpay again.',
   },
 ];
 
 const STEPS = [
   {
     number: '1',
-    title: 'Connect your bank',
-    desc: "Securely link your UK business bank account via TrueLayer's FCA-authorised Open Banking connection. Read-only. Takes under 2 minutes.",
-    tag: 'TrueLayer — 2 min setup',
+    title: 'Sign up free',
+    desc: 'Create your account in 2 minutes. No credit card required.',
+    tag: '2 min setup',
   },
   {
     number: '2',
-    title: 'We detect your bills',
-    desc: 'Our engine scans your transaction history, identifies every recurring payment, and categorises them — broadband, energy, insurance, SaaS and more.',
-    tag: 'Fully automatic',
+    title: 'Connect your bank',
+    desc: 'Securely link your business bank via Open Banking. Read-only access, 60 seconds.',
+    tag: 'Read-only access',
   },
   {
     number: '3',
-    title: 'You save money',
-    desc: 'We surface cheaper alternatives from across the market. Review the saving, approve the switch with one click, and watch the saving land in your account.',
-    tag: 'One-click switch',
+    title: 'Save automatically',
+    desc: 'Vpayit detects your bills, finds better deals, and shows you exactly where to save.',
+    tag: 'Automatic detection',
   },
 ];
 
@@ -90,7 +90,7 @@ const PLANS = [
     name: 'Free',
     price: '£0',
     period: '/month',
-    features: ['Up to 3 bills tracked', '1 bank connection', 'Basic savings alerts', 'Email support'],
+    features: ['1 bank connection', 'Up to 5 bills tracked', 'Basic reports', 'Bill alerts'],
     cta: 'Get started free',
     featured: false,
   },
@@ -98,16 +98,16 @@ const PLANS = [
     name: 'Pro',
     price: '£19',
     period: '/month',
-    features: ['Unlimited bills tracked', '3 bank connections', 'One-click switching', 'Monthly spending reports', 'Priority email support'],
-    cta: 'Start 14-day trial',
+    features: ['Unlimited banks', 'Unlimited bills', 'PDF reports', 'Priority savings alerts', 'Bill history charts'],
+    cta: 'Get started free',
     featured: true,
   },
   {
     name: 'Business',
     price: '£49',
     period: '/month',
-    features: ['Everything in Pro', 'Unlimited bank connections', 'Multi-user access (5 seats)', 'Accountant export (CSV/PDF)', 'Dedicated account manager'],
-    cta: 'View Business plan',
+    features: ['Everything in Pro', 'Multi-user access', 'API access', 'Dedicated support'],
+    cta: 'Get started free',
     featured: false,
   },
 ];
@@ -177,13 +177,12 @@ export default function Welcome() {
           </div>
 
           <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-6">
-            All your business bills.<br />
-            <span className="text-blue-600">One smart dashboard.</span>
+            Stop overpaying on<br />
+            <span className="text-blue-600">business bills</span>
           </h1>
 
           <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Connect your bank, auto-detect recurring bills, find savings opportunities, and never miss a payment.
-            Built for UK SMEs.
+            Vpayit connects to your bank, detects recurring bills, and finds cheaper alternatives. UK businesses save an average of £1,900/year.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
@@ -208,9 +207,10 @@ export default function Welcome() {
           {demoError && <p className="mb-4 text-sm text-red-600">{demoError}</p>}
 
           <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-400">
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Free to get started</span>
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> No credit card required</span>
-            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> FCA-regulated Open Banking</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> TrueLayer Open Banking</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Bank-grade encryption</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Read-only access</span>
+            <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> FCA regulated partners</span>
           </div>
         </div>
       </section>
@@ -370,14 +370,14 @@ export default function Welcome() {
             </div>
             <h2 className="text-3xl font-extrabold text-white tracking-tight mb-4">Ready to stop overpaying?</h2>
             <p className="text-blue-100 mb-8 text-lg leading-relaxed">
-              Join thousands of UK businesses taking control of their bills. Setup takes under 2 minutes and your first saving could be waiting today.
+              Join hundreds of UK businesses already saving with Vpayit.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/auth/register"
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors"
               >
-                Start saving now — it's free
+                Get started free
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <button
