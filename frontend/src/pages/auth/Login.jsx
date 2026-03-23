@@ -150,7 +150,7 @@ export default function Login() {
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-blue-400/50 bg-blue-600/20 hover:bg-blue-600/40 text-blue-200 hover:text-white text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {demoLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {demoLoading ? 'Loading demo…' : '▶  View live demo'}
+            {demoLoading ? 'Loading demo…' : 'View live demo'}
           </button>
         </div>
 
