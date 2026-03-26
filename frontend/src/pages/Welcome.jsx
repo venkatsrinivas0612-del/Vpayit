@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const DEMO_EMAIL    = 'demo@vpayit.co.uk';
-const DEMO_PASSWORD = 'demo123';
+const DEMO_EMAIL    = import.meta.env.VITE_DEMO_EMAIL    || 'demo@vpayit.co.uk';
+const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || 'demo123';
 
 const STATS = [
   { value: '£1,900', label: 'avg. annual saving per SME' },

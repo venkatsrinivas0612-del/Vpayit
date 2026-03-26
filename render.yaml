@@ -3,7 +3,7 @@ services:
     name: vpayit-api
     runtime: node
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: node server.js
     healthCheckPath: /health
     envVars:
@@ -23,7 +23,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://moonlit-gelato-dd1708.netlify.app
+        value: https://app.vpayit.co.uk
       # ── TrueLayer (update redirect URI to match Render URL) ─────
       - key: TRUELAYER_CLIENT_ID
         sync: false

@@ -2,17 +2,8 @@ const axios = require('axios');
 const { encrypt, decrypt } = require('./encryptionService');
 const { serviceClient } = require('../config/supabase');
 
-const AUTH_BASE = 'https://auth.truelayer-sandbox.com';
-const API_BASE  = 'https://api.truelayer-sandbox.com';
-
-// Startup diagnostics
-console.log('\n--- TrueLayer env check ---');
-console.log('  AUTH_BASE        :', AUTH_BASE);
-console.log('  API_BASE         :', API_BASE);
-console.log('  CLIENT_ID        :', process.env.TRUELAYER_CLIENT_ID   || '*** MISSING ***');
-console.log('  CLIENT_SECRET    :', process.env.TRUELAYER_CLIENT_SECRET ? '(set)' : '*** MISSING ***');
-console.log('  REDIRECT_URI     :', process.env.TRUELAYER_REDIRECT_URI  || '*** MISSING ***');
-console.log('---\n');
+const AUTH_BASE = process.env.TRUELAYER_AUTH_BASE || 'https://auth.truelayer-sandbox.com';
+const API_BASE  = process.env.TRUELAYER_API_BASE  || 'https://api.truelayer-sandbox.com';
 
 /**
  * Builds the TrueLayer OAuth2 authorisation URL.
@@ -25,9 +16,6 @@ function getAuthUrl(userId) {
     '&redirect_uri=' + encodeURIComponent(process.env.TRUELAYER_REDIRECT_URI) +
     '&providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all' +
     '&state=' + userId;
-  console.log('\n--- TrueLayer auth URL ---');
-  console.log(url);
-  console.log('---\n');
   return url;
 }
 
