@@ -67,48 +67,66 @@ const STEPS = [
   },
 ];
 
+const VISION_PHASES = [
+  {
+    phase: 'Phase 1',
+    badge: 'Live Now',
+    badgeStyle: 'live',
+    title: 'See & Save',
+    desc: 'Connect your business bank, automatically detect all recurring bills, and find cheaper alternatives across energy, telecoms, insurance, and more.',
+  },
+  {
+    phase: 'Phase 2',
+    badge: 'Coming 2027',
+    badgeStyle: 'coming',
+    title: 'One Payment',
+    desc: 'Pay all your business bills in one consolidated monthly payment through Vpayit. One direct debit, zero hassle, full visibility.',
+  },
+  {
+    phase: 'Phase 3',
+    badge: 'Register your interest',
+    badgeStyle: 'interest',
+    title: 'Vpayit Now, Youpayit Later',
+    desc: 'Short on cash one month? Vpayit covers your bills and you repay us on your terms. 0% interest for 14 days. Small fee if you spread over 4 weeks.',
+  },
+];
+
 const TESTIMONIALS = [
   {
-    quote: '"Set up in minutes and found us £2,100 in annual savings on energy and broadband alone. Couldn\'t believe how easy it was. Wish we\'d found Vpayit sooner."',
-    name: 'James Okafor',
-    company: 'Hackney Plumbers Ltd',
+    quote: '"The dashboard is brilliant — I can see every bill in one place. As a restaurant owner, knowing exactly what\'s going out each month has transformed how I manage cash flow."',
+    name: 'Anwar Hussain',
+    company: 'The Spice Garden, Manchester',
   },
   {
-    quote: '"We were paying over the odds on seven different bills. Vpayit caught them all automatically and the spending report is brilliant — our accountant loves it."',
-    name: 'Sarah Brennan',
-    company: 'Green Fields Catering',
+    quote: '"The upcoming credit feature is exactly what my clients need. So many small businesses struggle with cash flow around bill dates. Vpayit is solving a very real problem."',
+    name: 'Priya Mehta',
+    company: 'Mehta Accounting, Birmingham',
   },
   {
-    quote: '"As a law firm with tight compliance requirements the FCA-regulated connection gave us real confidence. Saved £1,680 in year one. The Pro plan pays for itself in days."',
-    name: 'David Whitmore',
-    company: 'Midlands Legal LLP',
+    quote: '"I had no idea I was paying £340 a year more than I needed to on my business energy. Vpayit flagged it in the first week. Switched supplier, sorted."',
+    name: 'David Clarke',
+    company: 'Clarke Electrical, Bristol',
   },
 ];
 
 const PLANS = [
   {
-    name: 'Free',
-    price: '£0',
+    name: 'Standard',
+    price: '£9.99',
     period: '/month',
-    features: ['1 bank connection', 'Up to 5 bills tracked', 'Basic reports', 'Bill alerts'],
+    features: ['1 bank connection', 'All bills tracked', 'Bill alerts & reminders', 'Monthly spending report', 'Savings finder'],
     cta: 'Get started free',
     featured: false,
+    soonFeatures: [],
   },
   {
-    name: 'Pro',
-    price: '£19',
+    name: 'Premium',
+    price: '£17.99',
     period: '/month',
-    features: ['Unlimited banks', 'Unlimited bills', 'PDF reports', 'Priority savings alerts', 'Bill history charts'],
+    features: ['Everything in Standard', 'Unlimited bank connections', 'PDF reports & analytics', 'Consolidated bill payment', 'Vpayit Credit access', 'Priority support'],
+    soonFeatures: ['Consolidated bill payment', 'Vpayit Credit access'],
     cta: 'Get started free',
     featured: true,
-  },
-  {
-    name: 'Business',
-    price: '£49',
-    period: '/month',
-    features: ['Everything in Pro', 'Multi-user access', 'API access', 'Dedicated support'],
-    cta: 'Get started free',
-    featured: false,
   },
 ];
 
@@ -181,8 +199,11 @@ export default function Welcome() {
             <span className="text-blue-600">business bills</span>
           </h1>
 
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-4 leading-relaxed">
             Vpayit connects to your bank, detects recurring bills, and finds cheaper alternatives. UK businesses save an average of £1,900/year.
+          </p>
+          <p className="text-base font-semibold text-violet-600 max-w-2xl mx-auto mb-10">
+            And soon — if you&apos;re short one month, we&apos;ve got you covered.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
@@ -278,6 +299,150 @@ export default function Welcome() {
         </div>
       </section>
 
+      {/* Our Vision */}
+      <section className="py-16 px-6 bg-slate-50" id="vision">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold tracking-widest text-blue-600 uppercase">Our Vision</span>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">
+              Building the future of <span className="text-blue-600">bill management</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {VISION_PHASES.map(({ phase, badge, badgeStyle, title, desc }, i) => (
+              <div
+                key={phase}
+                className={`rounded-2xl p-7 flex flex-col gap-4 ${
+                  i === 2
+                    ? 'bg-gradient-to-br from-violet-900 via-violet-700 to-indigo-700 shadow-xl'
+                    : `bg-white border shadow-sm ${i === 0 ? 'border-blue-500 border-2' : 'border-slate-100'}`
+                }`}
+              >
+                <span className={`text-xs font-bold tracking-widest uppercase ${i === 2 ? 'text-violet-300' : 'text-slate-400'}`}>{phase}</span>
+                <span className={`self-start text-xs font-bold px-3 py-1 rounded-full ${
+                  badgeStyle === 'live'    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                  badgeStyle === 'coming' ? 'bg-slate-100 text-slate-500 border border-slate-200' :
+                                             'bg-white/20 text-white border border-white/30'
+                }`}>
+                  {badgeStyle === 'live' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5 align-middle" />}
+                  {badge}
+                </span>
+                <h3 className={`font-extrabold text-lg tracking-tight ${i === 2 ? 'text-white' : 'text-slate-900'}`}>{title}</h3>
+                <p className={`text-sm leading-relaxed flex-1 ${i === 2 ? 'text-violet-200' : 'text-slate-500'}`}>{desc}</p>
+                {i === 2 && (
+                  <a href="mailto:hello@vpayit.co.uk?subject=Vpayit Credit - Register Interest"
+                     className="self-start text-sm font-semibold text-white bg-white/20 hover:bg-white/30 border border-white/30 px-4 py-2 rounded-lg transition-colors">
+                    Register interest
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Vpayit Credit */}
+      <section className="py-16 px-6" id="credit" style={{ background: 'linear-gradient(135deg,#3B0764,#4C1D95,#6D28D9)' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="inline-block text-xs font-bold tracking-widest uppercase text-violet-300 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full mb-5">
+                Vpayit Credit
+              </span>
+              <h2 className="text-3xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+                Your bills covered when you need it most
+              </h2>
+              <p className="text-violet-200 leading-relaxed mb-6">
+                When cash flow is tight, Vpayit steps in to cover the gap. We pay your bills, you repay us on your terms.
+              </p>
+
+              <div className="bg-white/10 border border-white/15 rounded-xl p-5 mb-6">
+                {[
+                  { label: 'Monthly bills', amount: '£1,300', highlight: false },
+                  { label: 'Cash available', amount: '£1,000', highlight: false },
+                  { label: 'Vpayit covers', amount: '£300',   highlight: true  },
+                ].map(({ label, amount, highlight }) => (
+                  <div key={label} className={`flex justify-between items-center text-sm py-1.5 ${highlight ? 'font-bold text-white border-t border-white/15 mt-2 pt-3' : 'text-violet-200'}`}>
+                    <span>{label}</span>
+                    <span className={highlight ? 'text-violet-300' : 'text-white font-medium'}>{amount}</span>
+                  </div>
+                ))}
+              </div>
+
+              <ul className="space-y-2.5 mb-8">
+                {['0% interest if repaid within 14 days', 'Small fee if spread over 4 weekly instalments', 'Available on Premium plan (coming soon)'].map(t => (
+                  <li key={t} className="flex items-center gap-2.5 text-sm text-violet-200">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="7" stroke="#A78BFA" strokeWidth="1.5"/>
+                      <polyline points="5,8 7,10 11,6" stroke="#A78BFA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+
+              <a href="mailto:hello@vpayit.co.uk?subject=Vpayit Credit - Register Interest"
+                 className="inline-flex items-center gap-2 px-7 py-3 bg-white text-violet-800 font-bold rounded-xl hover:shadow-lg transition-all hover:-translate-y-0.5">
+                Register interest
+              </a>
+            </div>
+
+            {/* Credit cards visual */}
+            <div className="relative h-72 md:h-80 flex items-center justify-center" aria-hidden="true">
+              <style>{`
+                @keyframes floatF{0%,100%{transform:translate(-55%,-50%) rotate(-6deg)}50%{transform:translate(-55%,-62%) rotate(-6deg)}}
+                @keyframes floatB{0%,100%{transform:translate(-42%,-46%) rotate(4deg)}50%{transform:translate(-42%,-56%) rotate(4deg)}}
+              `}</style>
+              {/* Back card */}
+              <div style={{
+                position:'absolute', left:'50%', top:'50%',
+                width:'280px', height:'175px', borderRadius:'14px', padding:'18px',
+                background:'linear-gradient(135deg,#1E1B4B,#312E81,#1E3A8A)',
+                boxShadow:'0 12px 40px rgba(30,27,75,0.5)',
+                display:'flex', flexDirection:'column', justifyContent:'space-between',
+                animation:'floatB 7s ease-in-out infinite',
+              }}>
+                <div style={{background:'rgba(0,0,0,0.4)',height:'32px',margin:'0 -18px',marginTop:'4px'}} />
+                <p style={{fontSize:'0.78rem',color:'rgba(255,255,255,0.65)',fontStyle:'italic',textAlign:'center'}}>Pay your bills. We&apos;ve got your back.</p>
+                <div style={{background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'100px',padding:'4px 14px',fontSize:'0.68rem',fontWeight:700,color:'#C4B5FD',textAlign:'center',alignSelf:'center'}}>
+                  0% interest for 14 days
+                </div>
+              </div>
+              {/* Front card */}
+              <div style={{
+                position:'absolute', left:'50%', top:'50%',
+                width:'280px', height:'175px', borderRadius:'14px', padding:'18px',
+                background:'linear-gradient(135deg,#7C3AED,#4C1D95,#2563EB)',
+                boxShadow:'0 20px 60px rgba(124,58,237,0.5)',
+                display:'flex', flexDirection:'column', justifyContent:'space-between',
+                animation:'floatF 5s ease-in-out infinite',
+              }}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                  <div style={{width:'32px',height:'24px',background:'linear-gradient(135deg,#F59E0B,#D97706)',borderRadius:'4px'}} />
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'1px'}}>
+                    <span style={{fontSize:'0.8rem',fontWeight:800,color:'rgba(255,255,255,0.9)',letterSpacing:'-0.02em'}}>Vpayit</span>
+                    <span style={{fontSize:'0.58rem',fontWeight:700,letterSpacing:'0.14em',color:'rgba(255,255,255,0.5)',textTransform:'uppercase'}}>Credit</span>
+                  </div>
+                </div>
+                <div style={{fontFamily:'monospace',fontSize:'0.72rem',letterSpacing:'0.16em',color:'rgba(255,255,255,0.65)'}}>
+                  &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 4291
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}}>
+                  <div>
+                    <div style={{fontSize:'0.56rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'rgba(255,255,255,0.45)',marginBottom:'2px'}}>Available</div>
+                    <div style={{fontSize:'0.82rem',fontWeight:700,color:'#fff'}}>£500.00</div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontSize:'0.56rem',textTransform:'uppercase',letterSpacing:'0.1em',color:'rgba(255,255,255,0.45)',marginBottom:'2px'}}>Valid thru</div>
+                    <div style={{fontSize:'0.82rem',fontWeight:700,color:'#fff'}}>12/28</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="py-16 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
@@ -315,8 +480,8 @@ export default function Welcome() {
               Simple, <span className="text-blue-600">transparent pricing</span>
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {PLANS.map(({ name, price, period, features, cta, featured }) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
+            {PLANS.map(({ name, price, period, features, soonFeatures, cta, featured }) => (
               <div
                 key={name}
                 className={`rounded-2xl p-7 flex flex-col gap-6 ${
@@ -341,7 +506,12 @@ export default function Welcome() {
                   {features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-sm">
                       <Check className={`w-4 h-4 mt-0.5 shrink-0 ${featured ? 'text-blue-200' : 'text-blue-600'}`} />
-                      <span className={featured ? 'text-blue-50' : 'text-slate-600'}>{f}</span>
+                      <span className={featured ? 'text-blue-50' : 'text-slate-600'}>
+                        {f}
+                        {soonFeatures?.includes(f) && (
+                          <span className="ml-1.5 text-xs font-bold bg-violet-100 text-violet-700 border border-violet-200 px-1.5 py-0.5 rounded-full align-middle">Soon</span>
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>
