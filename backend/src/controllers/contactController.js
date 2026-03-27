@@ -53,11 +53,3 @@ const submitContact = async (req, res, next) => {
 };
 
 module.exports = { submitContact };
-```
-
-**Save (Ctrl+S), close Notepad, then in PowerShell:**
-```
-cd C:\Users\venka\vpayit
-git add backend/src/controllers/contactController.js
-git commit -m "Fix contact controller: use emailService instead of direct Resend"
-git push
