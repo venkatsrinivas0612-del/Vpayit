@@ -14,8 +14,7 @@ const errorHandler = require('./src/middleware/errorHandler');
 const REQUIRED_TRUELAYER = ['TRUELAYER_CLIENT_ID', 'TRUELAYER_CLIENT_SECRET', 'TRUELAYER_REDIRECT_URI'];
 const missingTL = REQUIRED_TRUELAYER.filter(k => !process.env[k]);
 if (missingTL.length) {
-  missingTL.forEach(k => logger.error(`Missing required env var: ${k}`));
-  process.exit(1);
+  missingTL.forEach(k => logger.warn(`TrueLayer env var not set: ${k} — bank connection features will be unavailable`));
 }
 
 const app = express();
