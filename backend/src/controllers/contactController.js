@@ -1,15 +1,20 @@
 const { serviceClient } = require('../config/supabase');
 const { sendEmail } = require('../services/emailService');
+const logger = require('../utils/logger');
 
 const submitContact = async (req, res, next) => {
   try {
     const { name, email, company = '', enquiry = 'General enquiry', message } = req.body;
 
-    // 1. Save to Supabase
-    const { error: dbError } = await serviceClient
-      .from('contact_submissions')
-      .insert({ name, email, company, message });
-    if (dbError) throw dbError;
+    // 1. Save to Supabase — non-fatal: log and continue if DB is unavailable
+    try {
+      const { error: dbError } = await serviceClient
+        .from('contact_submissions')
+        .insert({ name, email, company, message });
+      if (dbError) logger.error('contact_submissions insert failed', { error: dbError.message });
+    } catch (dbErr) {
+      logger.error('contact_submissions insert threw', { error: dbErr.message });
+    }
 
     // 2. Notify you at enquiry@vpayit.co.uk
     await sendEmail(
