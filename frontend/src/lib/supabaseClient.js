@@ -4,7 +4,7 @@ const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnon) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env');
+  console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — auth will not work. Set these in your Netlify environment variables.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnon);
