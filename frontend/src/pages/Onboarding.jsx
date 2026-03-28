@@ -20,6 +20,7 @@ export default function Onboarding() {
   const [step, setStep]         = useState(1);
   const [saving, setSaving]     = useState(false);
   const [connecting, setConn]   = useState(false);
+  const [bankError, setBankError] = useState('');
 
   const [form, setForm] = useState({
     business_name: '',
@@ -52,12 +53,13 @@ export default function Onboarding() {
 
   async function handleConnectBank() {
     setConn(true);
+    setBankError('');
     try {
       const { url } = await api.banks.authUrl();
-      // Store that onboarding was in progress so we can redirect back
       localStorage.setItem('vpayit_onboarding_bank_pending', '1');
       window.location.href = url;
-    } catch {
+    } catch (err) {
+      setBankError(err.message || 'Could not start bank connection. Please try again.');
       setConn(false);
     }
   }
@@ -191,6 +193,10 @@ export default function Onboarding() {
                   </div>
                 ))}
               </div>
+
+              {bankError && (
+                <p className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{bankError}</p>
+              )}
 
               <button
                 onClick={handleConnectBank}

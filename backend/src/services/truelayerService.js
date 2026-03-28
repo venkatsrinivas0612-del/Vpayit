@@ -9,11 +9,18 @@ const API_BASE  = process.env.TRUELAYER_API_BASE  || 'https://api.truelayer-sand
  * Builds the TrueLayer OAuth2 authorisation URL.
  */
 function getAuthUrl(userId) {
-  const url = AUTH_BASE + '/' +
+  const clientId   = process.env.TRUELAYER_CLIENT_ID;
+  const redirectUri = process.env.TRUELAYER_REDIRECT_URI;
+
+  if (!clientId || !redirectUri) {
+    throw new Error('TrueLayer is not configured on this server. Set TRUELAYER_CLIENT_ID and TRUELAYER_REDIRECT_URI in Railway environment variables.');
+  }
+
+  const url = AUTH_BASE +
     '?response_type=code' +
-    '&client_id=' + process.env.TRUELAYER_CLIENT_ID +
+    '&client_id=' + clientId +
     '&scope=info%20accounts%20balance%20cards%20transactions%20direct_debits%20standing_orders%20offline_access' +
-    '&redirect_uri=' + encodeURIComponent(process.env.TRUELAYER_REDIRECT_URI) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
     '&providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all' +
     '&state=' + userId;
   return url;
