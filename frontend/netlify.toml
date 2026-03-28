@@ -3,7 +3,8 @@
   publish       = "dist"
 
 [build.environment]
-  NODE_VERSION  = "18"
+  NODE_VERSION      = "18"
+  VITE_API_BASE_URL = "https://vpayit-production.up.railway.app/api/v1"
 
 # SPA catch-all — send every route to index.html so React Router works
 [[redirects]]

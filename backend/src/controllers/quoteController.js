@@ -67,6 +67,49 @@ const submitQuote = async (req, res, next) => {
       </div>`
     );
 
+    // Confirmation to the customer
+    const firstName = name.split(' ')[0];
+    await sendEmail(
+      email,
+      `We're on it, ${firstName} — your free comparison is underway`,
+      `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <div style="background:#1d4ed8;padding:28px 32px;border-radius:12px 12px 0 0">
+          <span style="color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px">Vpayit</span>
+          <span style="color:#93c5fd;font-size:13px;margin-left:10px">Business bill management</span>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px">
+          <h1 style="margin:0 0 8px;font-size:22px;color:#0f172a">Thanks ${firstName}, we're comparing your bills now</h1>
+          <p style="font-size:15px;color:#475569;line-height:1.7;margin:0 0 24px">
+            We've received your request and our team is working on finding you the best deals. You'll hear from us within <strong>24 hours</strong> with a personalised comparison.
+          </p>
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:20px 24px;margin-bottom:24px">
+            <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.06em">What we're comparing for you</p>
+            <p style="margin:0;font-size:16px;font-weight:600;color:#0f172a">${servicesList || 'Business bills'}</p>
+          </div>
+
+          <p style="font-size:14px;color:#64748b;line-height:1.7;margin:0 0 24px">
+            While you wait, you can also connect your bank account to let us see your actual spend — it makes the comparison much more accurate and finds bigger savings.
+          </p>
+
+          <a href="https://app.vpayit.co.uk/auth/register"
+             style="display:inline-block;background:#1d4ed8;color:#fff;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;text-decoration:none">
+            Connect my bank account →
+          </a>
+
+          <p style="margin:28px 0 0;font-size:13px;color:#94a3b8">
+            Questions? Just reply to this email — we're a real team, not a bot.
+          </p>
+        </div>
+        <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px;text-align:center;border-radius:0 0 12px 12px">
+          <p style="margin:0;font-size:12px;color:#94a3b8">
+            © ${new Date().getFullYear()} Vpayit Ltd · London, UK ·
+            <a href="https://vpayit.co.uk" style="color:#1d4ed8;text-decoration:none">vpayit.co.uk</a>
+          </p>
+        </div>
+      </div>`
+    );
+
     res.json({ ok: true });
   } catch (err) {
     next(err);
