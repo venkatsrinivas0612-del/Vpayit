@@ -36,6 +36,19 @@ const contactRules = [
   body('company').optional().isString().trim().isLength({ max: 200 }).withMessage('company must be under 200 characters'),
 ];
 
+const quoteRules = [
+  body('name').isString().trim().isLength({ min: 1, max: 200 }).withMessage('name is required'),
+  body('email').isEmail().normalizeEmail().withMessage('A valid email address is required'),
+  body('phone').optional().isString().trim().isLength({ max: 30 }).withMessage('phone must be under 30 characters'),
+  body('services').optional(),
+  body('business_name').optional().isString().trim().isLength({ max: 200 }),
+  body('sector').optional().isString().trim().isLength({ max: 100 }),
+  body('employees').optional().isString().trim().isLength({ max: 50 }),
+  body('postcode').optional().isString().trim().isLength({ max: 20 }),
+  body('monthly_spend').optional().isString().trim().isLength({ max: 50 }),
+  body('contract_end').optional().isString().trim().isLength({ max: 100 }),
+];
+
 const billDetectionRules = [
   body('from').optional().isISO8601().withMessage('from must be a valid date (YYYY-MM-DD)'),
   body('to').optional().isISO8601().withMessage('to must be a valid date (YYYY-MM-DD)'),
@@ -63,6 +76,7 @@ module.exports = {
   registrationRules,
   loginRules,
   contactRules,
+  quoteRules,
   billDetectionRules,
   profileRules,
   updateBillRules,

@@ -8,6 +8,7 @@ const transactionRoutes   = require('./transactions');
 const notificationRoutes  = require('./notifications');
 const reportRoutes        = require('./reports');
 const contactRoutes       = require('./contact');
+const quoteRoutes         = require('./quote');
 const billingRoutes       = require('./billing');
 
 const router = Router();
@@ -28,6 +29,7 @@ router.use('/transactions',  transactionRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/reports',       reportRoutes);
 router.use('/contact',       contactRoutes);
+router.use('/quote',         quoteRoutes);
 router.use('/billing',       billingRoutes);
 
 module.exports = router;
