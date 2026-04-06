@@ -11,6 +11,7 @@ const contactRoutes       = require('./contact');
 const quoteRoutes         = require('./quote');
 const billingRoutes       = require('./billing');
 const waitlistRoutes      = require('./waitlist');
+const briefRoutes         = require('./brief');
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.get('/', (_req, res) => {
   res.json({
     service:   'Vpayit API',
     version:   'v1',
-    endpoints: ['/auth', '/banks', '/bills', '/savings', '/transactions', '/notifications', '/reports', '/contact', '/billing', '/waitlist'],
+    endpoints: ['/auth', '/banks', '/bills', '/savings', '/transactions', '/notifications', '/reports', '/contact', '/billing', '/waitlist', '/brief'],
   });
 });
 
@@ -33,5 +34,6 @@ router.use('/contact',       contactRoutes);
 router.use('/quote',         quoteRoutes);
 router.use('/billing',       billingRoutes);
 router.use('/waitlist',      waitlistRoutes);
+router.use('/brief',         briefRoutes);
 
 module.exports = router;

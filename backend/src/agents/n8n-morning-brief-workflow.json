@@ -62,7 +62,7 @@
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "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"
+              "value": "YOUR_ANTHROPIC_API_KEY"
             },
             {
               "name": "anthropic-version",
@@ -96,7 +96,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer re_LcFf7xDS_5FPuDhyBx42XZdCd5Nqr4GGR"
+              "value": "Bearer YOUR_RESEND_API_KEY"
             },
             {
               "name": "Content-Type",

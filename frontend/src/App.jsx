@@ -16,7 +16,8 @@ import Payments   from './pages/Payments';
 import Savings    from './pages/Savings';
 import Reports    from './pages/Reports';
 import Settings   from './pages/Settings';
-import Onboarding from './pages/Onboarding';
+import Onboarding    from './pages/Onboarding';
+import MorningBrief  from './pages/MorningBrief';
 
 function Protected({ children }) {
   return (
@@ -65,8 +66,9 @@ export default function App() {
       <Routes>
         {/* Public pages */}
         <Route path="/"        element={<Welcome />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/about"   element={<About />} />
+        <Route path="/pricing"        element={<Pricing />} />
+        <Route path="/about"          element={<About />} />
+        <Route path="/morning-brief"  element={<MorningBrief />} />
 
         {/* Public auth routes */}
         <Route path="/auth/login"           element={<Login />} />
