@@ -104,6 +104,10 @@ app.use((_req, res) => {
 // ── Global error handler ──────────────────────────────────
 app.use(errorHandler);
 
+// ── Morning Brief Agent ──────────────────────────────────
+const { startMorningBriefAgent } = require('./src/agents/morningBrief');
+startMorningBriefAgent();
+
 // ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

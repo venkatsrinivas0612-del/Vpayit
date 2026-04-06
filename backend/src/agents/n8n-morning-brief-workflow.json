@@ -1,0 +1,176 @@
+{
+  "name": "Helm Morning Brief",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily 8am Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://myzqnvsrtgrwkgoojtks.supabase.co/rest/v1/brief_subscribers?is_active=eq.true&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15enFudnNydGdyd2tnb29qdGtzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjE0NzIzMywiZXhwIjoyMDg3NzIzMjMzfQ.UOifRnOrKw8XfB7ZCW-b64IB7ccahb8vo-s3kE5NW44"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15enFudnNydGdyd2tnb29qdGtzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjE0NzIzMywiZXhwIjoyMDg3NzIzMjMzfQ.UOifRnOrKw8XfB7ZCW-b64IB7ccahb8vo-s3kE5NW44"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-subscribers",
+      "name": "Fetch Subscribers from Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop through each subscriber and prepare their personalised brief data\nconst today = new Date().toLocaleDateString('en-GB', {\n  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'\n});\n\nconst systemPrompt = `You are Helm's Morning Brief engine — an AI Chief of Staff for UK small businesses.\n\nYour job is to generate a clean, professional HTML email body for a daily morning briefing.\n\nRules:\n- Use British English throughout (colour, organisation, favour, etc.)\n- Use £ for currency, never $\n- Use UK date format (5 April 2026, not April 5, 2026)\n- Return ONLY the HTML — no markdown, no code fences, no explanation\n- Use inline CSS styles (this is for email clients which don't support <style> blocks)\n- Keep the tone warm, professional, and encouraging — like a trusted chief of staff\n- Keep it scannable: short paragraphs, bullet points, clear sections\n- The email should feel premium but not corporate — friendly but competent\n\nStructure the email with these sections:\n1. Greeting headline with the subscriber name and date\n2. Welcome note — warm, brief intro mentioning their company name\n3. UK Compliance Snapshot — key deadlines every UK Ltd company should know (confirmation statement annually, VAT returns quarterly if registered, corporation tax 9 months after year end, annual accounts 9 months after year end)\n4. Quick Actions — 3 things any new UK business owner should do this week (register for HMRC online, set up a business bank account, keep receipts for all expenses)\n5. Connect Your Data — explain that once they connect their bank account, the brief will show their real cash position, overdue invoices, and upcoming payments\n6. Positive closing note\n\nUse a clean colour scheme: #1a1a2e for dark text, #4361ee for accent/links, #f8f9fa for section backgrounds. Add a Helm branding footer with tagline: Your AI Chief of Staff.`;\n\n// Get the array of subscribers from the previous node\nconst subscribers = $input.all();\n\n// Build one item per subscriber\nreturn subscribers.map(item => {\n  const sub = item.json;\n  return {\n    json: {\n      subscriberId: sub.id,\n      name: sub.name,\n      email: sub.email,\n      companyName: sub.company_name,\n      businessType: sub.business_type,\n      date: today,\n      emailSubject: `Your Morning Brief — ${today}`,\n      systemPrompt: systemPrompt,\n      userMessage: `Generate today's morning brief for:\\n- Name: ${sub.name}\\n- Company: ${sub.company_name}\\n- Business type: ${sub.business_type}\\n- Date: ${today}\\n\\nThis is a new subscriber — they have not yet connected their bank account. Use the onboarding template with UK compliance information and encourage them to connect their data.\\n\\nReturn only the complete HTML email body.`\n    }\n  };\n});"
+      },
+      "id": "prepare-data",
+      "name": "Prepare Personalised Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "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"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 2000,\n  \"system\": {{ JSON.stringify($json.systemPrompt) }},\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": {{ JSON.stringify($json.userMessage) }}\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "call-claude",
+      "name": "Call Claude API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer re_LcFf7xDS_5FPuDhyBx42XZdCd5Nqr4GGR"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"Helm AI <hello@vpayit.co.uk>\",\n  \"to\": [{{ JSON.stringify($('Prepare Personalised Data').item.json.email) }}],\n  \"subject\": {{ JSON.stringify($('Prepare Personalised Data').item.json.emailSubject) }},\n  \"html\": {{ JSON.stringify($json.content[0].text) }}\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "send-email",
+      "name": "Send Email via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Daily 8am Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Subscribers from Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Subscribers from Supabase": {
+      "main": [
+        [
+          {
+            "node": "Prepare Personalised Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Personalised Data": {
+      "main": [
+        [
+          {
+            "node": "Call Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude API": {
+      "main": [
+        [
+          {
+            "node": "Send Email via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/London",
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "morning-brief"
+    }
+  ]
+}
