@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, Building2 } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 
 export default function Layout({ children }) {
@@ -21,22 +21,34 @@ export default function Layout({ children }) {
         onMobileClose={() => setMobileOpen(false)}
       />
 
-      <main className="flex-1 overflow-auto bg-slate-50 min-w-0">
+      <main className="flex-1 overflow-auto min-w-0" style={{ background: '#FEFDFB' }}>
         {/* Mobile top bar — visible only on small screens */}
-        <div className="md:hidden sticky top-0 z-20 flex items-center gap-3 px-4 h-14 border-b border-slate-200 bg-white shadow-sm">
+        <div
+          className="md:hidden sticky top-0 z-20 flex items-center gap-3 px-4 h-14"
+          style={{ background: '#FEFDFB', borderBottom: '1px solid #E8E6E1' }}
+        >
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: '#555' }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#F0EDE8')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             aria-label="Open menu"
           >
-            <Menu className="w-5 h-5 text-slate-600" />
+            <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-slate-900">Vpayit</span>
-          </div>
+          <span
+            className="font-extrabold text-lg tracking-tight"
+            style={{ color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.5px' }}
+          >
+            Vpayit
+          </span>
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: '#EEF2FF', color: '#2563EB', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            AI
+          </span>
         </div>
 
         {children}

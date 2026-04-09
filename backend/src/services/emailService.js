@@ -192,6 +192,156 @@ function monthlySummaryEmail(data) {
   return layout(`Your ${month} spending summary`, body);
 }
 
+// ── Brief welcome email ───────────────────────────────────────────────────────
+
+function briefWelcomeEmail(subscriber) {
+  const { name, business_stage, company_name, industry, outstanding_invoices,
+          vat_registered, year_end_month, direct_reports, growth_strategy,
+          primary_kpi, biggest_decision, employee_count, has_accountant,
+          business_structure, employment_status, plan_to_hire } = subscriber;
+
+  const firstName = (name || 'there').split(' ')[0];
+
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const accentColour = business_stage === 'aspiring' ? '#7C3AED'
+    : business_stage === 'executive' ? '#0D9488'
+    : '#2563EB';
+
+  const stageLabel = business_stage === 'aspiring' ? 'Pre-Formation'
+    : business_stage === 'executive' ? 'Executive'
+    : 'Growth';
+
+  // Build segment-specific bullet points
+  const bullets = [];
+
+  if (business_stage === 'aspiring') {
+    bullets.push(`UK business structure recommendation for your ${industry || 'industry'}`);
+    if (business_structure && business_structure !== 'Not sure yet') bullets.push(`${business_structure} formation walkthrough — step by step`);
+    bullets.push('Companies House & HMRC registration checklist');
+    if (plan_to_hire && plan_to_hire !== 'Just me for now') bullets.push('RTI/PAYE setup guide — triggered by your hiring plans');
+    bullets.push('Your personalised launch roadmap for the next 90 days');
+  } else if (business_stage === 'growth') {
+    if (vat_registered) {
+      bullets.push('Your exact VAT return deadline — calculated from your last filing');
+    }
+    if (year_end_month) {
+      bullets.push(`Corporation Tax deadline: 9 months after your ${MONTHS[year_end_month - 1]} year-end`);
+    }
+    if (outstanding_invoices && outstanding_invoices !== 'Nothing outstanding') {
+      bullets.push(`Invoice tracking for your ${outstanding_invoices} outstanding — chase drafts ready`);
+    }
+    if (has_accountant && has_accountant.startsWith('Yes')) {
+      bullets.push('Strategic decisions to raise with your accountant this week');
+    } else {
+      bullets.push('Full compliance detail — since you\'re managing it yourself');
+    }
+    if (employee_count && employee_count !== 'Just me') {
+      bullets.push('PAYE/RTI filing calendar for your team');
+    }
+  } else if (business_stage === 'executive') {
+    bullets.push('Executive summary — no noise, only what moves your business');
+    if (primary_kpi) bullets.push(`Opens with your primary metric: ${primary_kpi}`);
+    if (growth_strategy) bullets.push(`${growth_strategy} lens applied throughout`);
+    if (biggest_decision) bullets.push(`Intelligence and risk flags for your upcoming decision`);
+    bullets.push('Sector-specific regulatory changes relevant to your role');
+  }
+
+  const bulletRows = bullets.map(b => `
+    <tr>
+      <td style="padding:7px 0;font-size:14px;color:#e2e8f0;line-height:1.5;">
+        <span style="color:${accentColour};margin-right:10px;font-size:16px;">✓</span>${b}
+      </td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#111111;padding:28px 36px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.5px;">Vpayit</span>
+                  <span style="color:${accentColour};font-size:11px;font-weight:700;margin-left:8px;background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.25);padding:2px 8px;border-radius:99px;">AI</span>
+                </td>
+                <td style="text-align:right;">
+                  <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:3px 10px;border-radius:99px;">${stageLabel}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="background:#111111;padding:36px 36px 0;">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;">Welcome to your morning brief</p>
+            <h1 style="margin:0 0 16px;font-size:28px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">
+              You're in, ${firstName}.
+            </h1>
+            <p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.5);line-height:1.7;">
+              Your first brief arrives <strong style="color:#ffffff;">tomorrow at 8am</strong> — built specifically for your stage, industry, and answers. Not a template. Not generic advice.
+            </p>
+          </td>
+        </tr>
+
+        <!-- What's in your brief -->
+        <tr>
+          <td style="background:#111111;padding:0 36px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px 24px;">
+              <tr>
+                <td>
+                  <p style="margin:0 0 14px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;">What your brief will cover</p>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    ${bulletRows}
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Whitelist notice -->
+        <tr>
+          <td style="background:#111111;padding:0 36px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:16px 20px;">
+              <tr>
+                <td>
+                  <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">
+                    <strong style="color:#93c5fd;">One thing to do now:</strong> Add <strong style="color:#ffffff;">hello@vpayit.co.uk</strong> to your contacts. This ensures your brief always arrives in your inbox — not spam.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#0d0d0d;border-top:1px solid rgba(255,255,255,0.06);padding:20px 36px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);">
+              © ${new Date().getFullYear()} Vpayit Ltd · Your AI Chief of Staff ·
+              <a href="https://app.vpayit.co.uk" style="color:rgba(255,255,255,0.3);text-decoration:none;">app.vpayit.co.uk</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  return html;
+}
+
 // ── Core send function ────────────────────────────────────────────────────────
 
 async function sendEmail(to, subject, html) {
@@ -216,4 +366,4 @@ async function sendEmail(to, subject, html) {
   return { ok: true, id: data?.id };
 }
 
-module.exports = { sendEmail, welcomeEmail, billReminderEmail, monthlySummaryEmail };
+module.exports = { sendEmail, welcomeEmail, billReminderEmail, monthlySummaryEmail, briefWelcomeEmail };

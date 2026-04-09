@@ -236,6 +236,39 @@ export default function Welcome() {
         </div>
       </section>
 
+      {/* Morning Brief Banner */}
+      <section className="py-10 px-6" style={{ background: '#080808' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="relative rounded-2xl overflow-hidden p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6"
+            style={{ background: 'linear-gradient(135deg, #0f0f0f 0%, #111827 100%)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {/* glow */}
+            <div className="pointer-events-none absolute" style={{ top: '-40%', left: '-10%', width: '400px', height: '300px', background: 'radial-gradient(ellipse, rgba(37,99,235,0.18) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                style={{ background: 'rgba(37,99,235,0.15)', color: '#93C5FD', border: '1px solid rgba(37,99,235,0.25)' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
+                Free · No credit card
+              </div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-2" style={{ letterSpacing: '-0.5px' }}>
+                Your AI Chief of Staff,<br />
+                <span className="italic" style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>briefed every morning at 8am.</span>
+              </h2>
+              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)', maxWidth: '420px' }}>
+                Cash position, compliance deadlines, invoice alerts, and what needs your attention today — personalised to your business stage and industry. Free for UK business owners.
+              </p>
+            </div>
+            <div className="relative z-10 flex flex-col items-start md:items-end gap-3 shrink-0">
+              <Link to="/morning-brief"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white no-underline transition-all"
+                style={{ background: 'linear-gradient(135deg, #2563EB, #1d4ed8)' }}>
+                Get my free brief <ArrowRight className="w-4 h-4" />
+              </Link>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>Aspiring · Growing · Executive — 3 journeys, one platform</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Stats strip */}
       <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
