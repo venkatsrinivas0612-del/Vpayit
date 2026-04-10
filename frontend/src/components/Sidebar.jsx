@@ -7,15 +7,17 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Newspaper,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard'   },
-  { to: '/chat',      icon: MessageSquare,   label: 'Ask AI'       },
-  { to: '/compliance',icon: ShieldCheck,     label: 'Compliance'  },
-  { to: '/settings',  icon: Settings,        label: 'Settings'    },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard'  },
+  { to: '/brief',     icon: Newspaper,       label: 'My Briefs'  },
+  { to: '/chat',      icon: MessageSquare,   label: 'Ask AI'     },
+  { to: '/compliance',icon: ShieldCheck,     label: 'Compliance' },
+  { to: '/settings',  icon: Settings,        label: 'Settings'   },
 ];
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {

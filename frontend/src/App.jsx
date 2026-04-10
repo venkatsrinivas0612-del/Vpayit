@@ -18,6 +18,7 @@ import Reports    from './pages/Reports';
 import Settings   from './pages/Settings';
 import Onboarding    from './pages/Onboarding';
 import MorningBrief  from './pages/MorningBrief';
+import BriefHistory  from './pages/BriefHistory';
 
 function Protected({ children }) {
   return (
@@ -80,6 +81,7 @@ export default function App() {
 
         {/* Protected app routes */}
         <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+        <Route path="/brief"     element={<Protected><BriefHistory /></Protected>} />
         <Route path="/bills"     element={<Protected><Bills /></Protected>} />
         <Route path="/payments"  element={<Protected><Payments /></Protected>} />
         <Route path="/savings"   element={<Protected><Savings /></Protected>} />

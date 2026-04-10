@@ -76,4 +76,35 @@ router.post('/subscribe', async (req, res) => {
   return res.status(201).json({ success: true, subscriber: data });
 });
 
+// POST /api/v1/brief/save — called by n8n after generating each brief
+router.post('/save', async (req, res) => {
+  const { email, content, business_stage } = req.body;
+  if (!email || !content) {
+    return res.status(400).json({ error: 'email and content are required.' });
+  }
+
+  const { error } = await serviceClient
+    .from('brief_history')
+    .insert([{ subscriber_email: email, content, business_stage: business_stage || null }]);
+
+  if (error) return res.status(500).json({ error: 'Failed to save brief.' });
+  return res.status(201).json({ success: true });
+});
+
+// GET /api/v1/brief/history?email=... — fetch past briefs for a subscriber
+router.get('/history', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'email is required.' });
+
+  const { data, error } = await serviceClient
+    .from('brief_history')
+    .select('id, content, business_stage, generated_at')
+    .eq('subscriber_email', email)
+    .order('generated_at', { ascending: false })
+    .limit(30);
+
+  if (error) return res.status(500).json({ error: 'Failed to fetch briefs.' });
+  return res.json({ briefs: data });
+});
+
 module.exports = router;
