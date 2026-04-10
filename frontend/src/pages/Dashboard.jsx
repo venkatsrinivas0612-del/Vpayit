@@ -273,6 +273,53 @@ function ThreadCard({ title, meta, body, status, cta }) {
   );
 }
 
+/* ─── Markdown renderer ───────────────────────────────────────────────────── */
+
+function renderMarkdown(text) {
+  function applyInline(str) {
+    const parts = str.split(/\*\*(.*?)\*\*/g);
+    return parts.map((p, i) =>
+      i % 2 === 1
+        ? <strong key={i} style={{ fontWeight: 700 }}>{p}</strong>
+        : p.replace(/\*(.*?)\*/g, '$1')
+    );
+  }
+
+  const lines = text.split('\n').filter(l => l.trim() !== '');
+  return lines.map((line, i) => {
+    if (/^#{1,3}\s+/.test(line)) {
+      const content = line.replace(/^#{1,3}\s+/, '');
+      return (
+        <p key={i} style={{ fontWeight: 700, fontSize: '15px', marginBottom: '6px', color: '#111' }}>
+          {applyInline(content)}
+        </p>
+      );
+    }
+    if (/^[-*]\s+/.test(line)) {
+      return (
+        <p key={i} style={{ paddingLeft: '12px', marginBottom: '4px', color: '#333' }}>
+          <span style={{ color: '#2563EB', marginRight: '6px' }}>›</span>
+          {applyInline(line.replace(/^[-*]\s+/, ''))}
+        </p>
+      );
+    }
+    const numMatch = line.match(/^\d+\.\s+(.*)/);
+    if (numMatch) {
+      return (
+        <p key={i} style={{ paddingLeft: '12px', marginBottom: '4px', color: '#333' }}>
+          <span style={{ color: '#2563EB', marginRight: '6px' }}>›</span>
+          {applyInline(numMatch[1])}
+        </p>
+      );
+    }
+    return (
+      <p key={i} style={{ marginBottom: '6px', color: '#333' }}>
+        {applyInline(line)}
+      </p>
+    );
+  });
+}
+
 /* ─── AI ask bar ──────────────────────────────────────────────────────────── */
 
 function AskBar() {
@@ -357,12 +404,28 @@ function AskBar() {
         </button>
       </div>
 
-      {reply && (
+      {loading && (
+        <div className="mt-4 flex items-center gap-2" style={{ color: '#9CA3AF' }}>
+          <span className="inline-flex gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+          </span>
+          <span className="text-xs" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vpayit is thinking…</span>
+        </div>
+      )}
+
+      {reply && !loading && (
         <div
-          className="mt-4 p-4 rounded-xl text-sm leading-relaxed"
-          style={{ background: '#F5F4F0', color: '#111', fontFamily: "'Plus Jakarta Sans', sans-serif", borderLeft: '3px solid #2563EB' }}
+          className="mt-4 rounded-xl p-4"
+          style={{ background: '#F0F4FF', borderLeft: '3px solid #2563EB' }}
         >
-          {reply}
+          <p className="text-xs font-semibold mb-3" style={{ color: '#2563EB', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '0.05em' }}>
+            VPAYIT AI
+          </p>
+          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '14px', lineHeight: '1.75' }}>
+            {renderMarkdown(reply)}
+          </div>
         </div>
       )}
     </div>
