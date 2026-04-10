@@ -12,6 +12,7 @@ const quoteRoutes         = require('./quote');
 const billingRoutes       = require('./billing');
 const waitlistRoutes      = require('./waitlist');
 const briefRoutes         = require('./brief');
+const askRoutes           = require('./ask');
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use('/quote',         quoteRoutes);
 router.use('/billing',       billingRoutes);
 router.use('/waitlist',      waitlistRoutes);
 router.use('/brief',         briefRoutes);
+router.use('/ask',           askRoutes);
 
 module.exports = router;
