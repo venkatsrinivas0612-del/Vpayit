@@ -286,18 +286,29 @@ function AskBar() {
     'Summarise my cash position',
   ];
 
-  function handleAsk(q) {
+  async function handleAsk(q) {
     const text = q ?? query;
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
     setQuery(text);
     setLoading(true);
     setReply('');
-    setTimeout(() => {
-      setReply(
-        `Based on your Vpayit data: your Q1 VAT estimate is ~£3,200 based on projected turnover of £16,000. Connect your bank account for a precise figure.`
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api/v1/ask`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: text }),
+        }
       );
+      const data = await res.json();
+      setReply(data.reply ?? data.error ?? 'No response received.');
+    } catch {
+      setReply('Could not reach Vpayit AI. Please check your connection.');
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   }
 
   return (
