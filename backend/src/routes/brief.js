@@ -87,7 +87,7 @@ router.post('/save', async (req, res) => {
     .from('brief_history')
     .insert([{ subscriber_email: email, content, business_stage: business_stage || null }]);
 
-  if (error) return res.status(500).json({ error: 'Failed to save brief.' });
+  if (error) return res.status(500).json({ error: 'Failed to save brief.', detail: error.message });
   return res.status(201).json({ success: true });
 });
 
