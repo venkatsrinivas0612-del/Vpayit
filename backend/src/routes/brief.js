@@ -79,7 +79,9 @@ router.post('/subscribe', async (req, res) => {
 // POST /api/v1/brief/save — called by n8n after generating each brief
 router.post('/save', async (req, res) => {
   const { email, content, business_stage } = req.body;
+  console.log('[Brief Save] received:', { email, contentLength: content?.length, business_stage });
   if (!email || !content) {
+    console.log('[Brief Save] missing fields');
     return res.status(400).json({ error: 'email and content are required.' });
   }
 

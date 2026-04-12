@@ -107,9 +107,9 @@ app.use((_req, res) => {
 // ── Global error handler ──────────────────────────────────
 app.use(errorHandler);
 
-// ── Morning Brief Agent ──────────────────────────────────
-const { startMorningBriefAgent } = require('./src/agents/morningBrief');
-startMorningBriefAgent();
+// ── Morning Brief Agent (disabled — n8n handles this now) ─
+// const { startMorningBriefAgent } = require('./src/agents/morningBrief');
+// startMorningBriefAgent();
 
 // ── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
