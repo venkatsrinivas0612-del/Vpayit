@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Shield, CheckCircle2, ArrowRight, ArrowLeft, Loader2, Zap, TrendingDown, BarChart3 } from 'lucide-react';
+import { Building2, Shield, CheckCircle2, ArrowRight, ArrowLeft, Loader2, Newspaper, ShieldCheck, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { api } from '../lib/api';
@@ -240,22 +240,22 @@ export default function Onboarding() {
               <div className="space-y-3 mb-8">
                 {[
                   {
-                    icon: Zap,
+                    icon: Newspaper,
                     colour: 'blue',
-                    title: 'Detect your bills automatically',
-                    desc:  'We scan your bank transactions and identify every recurring bill — energy, insurance, rates, telecoms, and more.',
+                    title: 'Morning Brief at 8am daily',
+                    desc:  'Every morning you receive a personalised business briefing — cash position, upcoming deadlines, and what needs your attention today.',
                   },
                   {
-                    icon: TrendingDown,
+                    icon: ShieldCheck,
                     colour: 'green',
-                    title: 'Find you cheaper alternatives',
-                    desc:  'Vpayit compares your bills to the market and surfaces better deals. UK SMEs save an average of £1,900/year.',
+                    title: 'Compliance on autopilot',
+                    desc:  'Vpayit tracks every UK deadline — VAT returns, confirmation statements, Corporation Tax — and tells you what to do before it\'s due.',
                   },
                   {
-                    icon: BarChart3,
+                    icon: MessageSquare,
                     colour: 'purple',
-                    title: 'Track your spending over time',
-                    desc:  'Monthly reports show exactly where your money goes and how your bills are trending.',
+                    title: 'Ask your AI Chief of Staff',
+                    desc:  'Ask anything about your business in plain English. "How should I pay myself?" "Do I need to register for VAT?" Answers based on your data.',
                   },
                 ].map(({ icon: Icon, colour, title, desc }) => {
                   const colours = {

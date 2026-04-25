@@ -10,15 +10,18 @@ import Login          from './pages/auth/Login';
 import Register       from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 
-import Dashboard  from './pages/Dashboard';
-import Bills      from './pages/Bills';
-import Payments   from './pages/Payments';
-import Savings    from './pages/Savings';
-import Reports    from './pages/Reports';
-import Settings   from './pages/Settings';
-import Onboarding    from './pages/Onboarding';
-import MorningBrief  from './pages/MorningBrief';
-import BriefHistory  from './pages/BriefHistory';
+import Dashboard       from './pages/Dashboard';
+import Bills           from './pages/Bills';
+import Payments        from './pages/Payments';
+import Savings         from './pages/Savings';
+import Reports         from './pages/Reports';
+import Settings        from './pages/Settings';
+import Onboarding      from './pages/Onboarding';
+import MorningBrief    from './pages/MorningBrief';
+import BriefHistory    from './pages/BriefHistory';
+import Chat            from './pages/Chat';
+import Compliance      from './pages/Compliance';
+import ComplianceCheck from './pages/ComplianceCheck';
 
 function Protected({ children }) {
   return (
@@ -66,10 +69,11 @@ export default function App() {
       <Analytics />
       <Routes>
         {/* Public pages */}
-        <Route path="/"        element={<Welcome />} />
-        <Route path="/pricing"        element={<Pricing />} />
-        <Route path="/about"          element={<About />} />
-        <Route path="/morning-brief"  element={<MorningBrief />} />
+        <Route path="/"                   element={<Welcome />} />
+        <Route path="/pricing"            element={<Pricing />} />
+        <Route path="/about"              element={<About />} />
+        <Route path="/morning-brief"      element={<MorningBrief />} />
+        <Route path="/compliance-check"   element={<ComplianceCheck />} />
 
         {/* Public auth routes */}
         <Route path="/auth/login"           element={<Login />} />
@@ -80,13 +84,15 @@ export default function App() {
         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
         {/* Protected app routes */}
-        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-        <Route path="/brief"     element={<Protected><BriefHistory /></Protected>} />
-        <Route path="/bills"     element={<Protected><Bills /></Protected>} />
-        <Route path="/payments"  element={<Protected><Payments /></Protected>} />
-        <Route path="/savings"   element={<Protected><Savings /></Protected>} />
-        <Route path="/reports"   element={<Protected><Reports /></Protected>} />
-        <Route path="/settings"  element={<Protected><Settings /></Protected>} />
+        <Route path="/dashboard"   element={<Protected><Dashboard /></Protected>} />
+        <Route path="/brief"       element={<Protected><BriefHistory /></Protected>} />
+        <Route path="/chat"        element={<Protected><Chat /></Protected>} />
+        <Route path="/compliance"  element={<Protected><Compliance /></Protected>} />
+        <Route path="/bills"       element={<Protected><Bills /></Protected>} />
+        <Route path="/payments"    element={<Protected><Payments /></Protected>} />
+        <Route path="/savings"     element={<Protected><Savings /></Protected>} />
+        <Route path="/reports"     element={<Protected><Reports /></Protected>} />
+        <Route path="/settings"    element={<Protected><Settings /></Protected>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

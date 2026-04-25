@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import {
+  ComposedChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ReferenceLine, ResponsiveContainer,
+} from 'recharts';
+import { useAuth } from '../context/AuthContext';
 
-/* ─── Mock data ───────────────────────────────────────────────────────────── */
+/* ─── Mock fallback data ──────────────────────────────────────────────────── */
 
-const BRIEF = `Good morning, Venkat. Vpayit Ltd is in solid shape this week. Cash reserves are healthy at £12,840 and your compliance score sits at 87 — well above the UK average for businesses at your stage. One item needs your eye today: the Acme Corp invoice has been overdue for 14 days and is worth chasing before the weekend. Your VAT return window opens in 31 days — I'll prompt you again when it's time to gather receipts. Otherwise, a quiet week. Use the time well.`;
+const BRIEF_FALLBACK = `Good morning. Your AI Chief of Staff is ready. Connect your bank account and subscribe to the morning brief to receive a personalised daily summary of your cash position, compliance deadlines, and actions needed.`;
 
 const METRICS = [
   {
@@ -11,7 +16,7 @@ const METRICS = [
     value: '£12,840',
     sub: '+£640 this week',
     trend: 'up',
-    detail: 'Barclays Business · last synced 6h ago',
+    detail: 'Connect bank via Open Banking to sync live',
   },
   {
     id: 'compliance',
@@ -33,30 +38,9 @@ const METRICS = [
 ];
 
 const DEADLINES = [
-  {
-    id: 'vat',
-    label: 'VAT Return',
-    due: '5 May 2026',
-    daysLeft: 31,
-    amount: '~£3,200 estimated',
-    status: 'upcoming',
-  },
-  {
-    id: 'conf',
-    label: 'Confirmation Statement',
-    due: '14 Aug 2026',
-    daysLeft: 131,
-    amount: '£34 filing fee',
-    status: 'clear',
-  },
-  {
-    id: 'corp',
-    label: 'Corporation Tax',
-    due: '31 Dec 2026',
-    daysLeft: 270,
-    amount: '~£8,400 estimated',
-    status: 'clear',
-  },
+  { id: 'vat',  label: 'VAT Return',              due: '5 May 2026',  daysLeft: 10,  amount: '~£3,200 estimated', status: 'urgent'   },
+  { id: 'conf', label: 'Confirmation Statement',  due: '14 Aug 2026', daysLeft: 111, amount: '£34 filing fee',    status: 'clear'    },
+  { id: 'corp', label: 'Corporation Tax',         due: '31 Dec 2026', daysLeft: 250, amount: '~£8,400 estimated', status: 'clear'    },
 ];
 
 const THREADS = [
@@ -77,6 +61,108 @@ const THREADS = [
     cta: 'Review draft',
   },
 ];
+
+const CASHFLOW_DATA = [
+  { month: 'Feb', cash: 9200  },
+  { month: 'Mar', cash: 10100 },
+  { month: 'Apr', cash: 12840 },
+  { month: 'May', cash: 9640  },
+  { month: 'Jun', cash: 11200 },
+  { month: 'Jul', cash: 14800 },
+];
+
+/* ─── Cash flow + compliance chart ───────────────────────────────────────── */
+
+function CashFlowChart() {
+  return (
+    <div
+      className="rounded-2xl border p-6"
+      style={{ background: '#FFFFFF', borderColor: '#E8E6E1' }}
+    >
+      <div className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
+        <h2
+          className="text-xs font-bold uppercase tracking-widest"
+          style={{ color: '#9CA3AF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
+          Cash Position + Compliance Deadlines
+        </h2>
+        <span
+          className="text-xs"
+          style={{ color: '#C4BFB8', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
+          Mock data · TrueLayer sync coming soon
+        </span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={CASHFLOW_DATA} margin={{ top: 16, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#2563EB" stopOpacity={0.12} />
+              <stop offset="95%" stopColor="#2563EB" stopOpacity={0}    />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE8" vertical={false} />
+          <XAxis
+            dataKey="month"
+            tick={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 11, fill: '#9CA3AF' }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 11, fill: '#9CA3AF' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={v => `£${(v / 1000).toFixed(0)}k`}
+            width={44}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#111',
+              border: 'none',
+              borderRadius: '10px',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: '12px',
+              color: '#fff',
+              padding: '8px 12px',
+            }}
+            formatter={v => [`£${v.toLocaleString()}`, 'Cash']}
+            cursor={{ stroke: '#E8E6E1', strokeWidth: 1 }}
+          />
+          <Area
+            type="monotone"
+            dataKey="cash"
+            stroke="#2563EB"
+            strokeWidth={2}
+            fill="url(#cashGrad)"
+            dot={false}
+            activeDot={{ r: 4, fill: '#2563EB', stroke: '#fff', strokeWidth: 2 }}
+          />
+          <ReferenceLine
+            x="May"
+            stroke="#D97706"
+            strokeDasharray="4 3"
+            strokeWidth={1.5}
+            label={{
+              value: 'VAT due',
+              position: 'insideTopRight',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 10,
+              fill: '#D97706',
+            }}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+
+      <p
+        className="text-xs mt-3"
+        style={{ color: '#C4BFB8', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+      >
+        Amber dashed lines mark upcoming HMRC deadlines. Cash dip in May reflects estimated VAT payment.
+      </p>
+    </div>
+  );
+}
 
 /* ─── Pulse circle ────────────────────────────────────────────────────────── */
 
@@ -224,7 +310,7 @@ function ComplianceTimeline() {
 /* ─── Thread card ─────────────────────────────────────────────────────────── */
 
 function ThreadCard({ title, meta, body, status, cta }) {
-  const badgeBg = status === 'action' ? '#FEF3C7' : '#DCFCE7';
+  const badgeBg   = status === 'action' ? '#FEF3C7' : '#DCFCE7';
   const badgeText = status === 'action' ? '#92400E' : '#166534';
   const badgeLabel = status === 'action' ? 'Action needed' : 'Ready';
 
@@ -323,8 +409,8 @@ function renderMarkdown(text) {
 /* ─── AI ask bar ──────────────────────────────────────────────────────────── */
 
 function AskBar() {
-  const [query, setQuery] = useState('');
-  const [reply, setReply] = useState('');
+  const [query, setQuery]   = useState('');
+  const [reply, setReply]   = useState('');
   const [loading, setLoading] = useState(false);
 
   const SUGGESTIONS = [
@@ -332,6 +418,8 @@ function AskBar() {
     'Draft a chase email for Acme Corp',
     'Summarise my cash position',
   ];
+
+  const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
   async function handleAsk(q) {
     const text = q ?? query;
@@ -341,14 +429,11 @@ function AskBar() {
     setReply('');
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api/v1/ask`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: text }),
-        }
-      );
+      const res = await fetch(`${API}/api/v1/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+      });
       const data = await res.json();
       setReply(data.reply ?? data.error ?? 'No response received.');
     } catch {
@@ -435,9 +520,30 @@ function AskBar() {
 /* ─── Main dashboard ──────────────────────────────────────────────────────── */
 
 export default function Dashboard() {
+  const { user, profile } = useAuth();
+  const [liveBrief, setLiveBrief] = useState(null);
+  const [briefLoading, setBriefLoading] = useState(false);
+
+  const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+
   useEffect(() => {
     document.title = 'Dashboard — Vpayit';
   }, []);
+
+  // Fetch latest morning brief for this user
+  useEffect(() => {
+    if (!user?.email) return;
+    setBriefLoading(true);
+    fetch(`${API}/api/v1/brief/history?email=${encodeURIComponent(user.email)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.briefs?.length > 0) {
+          setLiveBrief(data.briefs[0].content);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setBriefLoading(false));
+  }, [user?.email]);
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -445,6 +551,10 @@ export default function Dashboard() {
     month: 'long',
     year: 'numeric',
   });
+
+  const greeting = profile?.business_name
+    ? `Good morning, ${profile.business_name}`
+    : 'Good morning';
 
   return (
     <div
@@ -466,7 +576,7 @@ export default function Dashboard() {
               className="text-2xl font-bold"
               style={{ color: '#111', letterSpacing: '-0.5px' }}
             >
-              Good morning, Venkat
+              {greeting}
             </h1>
           </div>
           <Pulse score={87} />
@@ -483,22 +593,35 @@ export default function Dashboard() {
           >
             Morning Brief · AI Summary
           </p>
-          <p
-            className="leading-relaxed"
-            style={{
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: '21px',
-              color: '#111',
-              lineHeight: '1.65',
-            }}
-          >
-            {BRIEF}
-          </p>
+          {briefLoading ? (
+            <div className="flex items-center gap-2 py-2" style={{ color: '#9CA3AF' }}>
+              <span className="inline-flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </span>
+              <span className="text-sm" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading your brief…</span>
+            </div>
+          ) : (
+            <p
+              className="leading-relaxed"
+              style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontSize: '21px',
+                color: '#111',
+                lineHeight: '1.65',
+              }}
+            >
+              {liveBrief ?? BRIEF_FALLBACK}
+            </p>
+          )}
           <p
             className="text-xs mt-4"
             style={{ color: '#C4BFB8', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
-            Generated at 08:00 · Based on your Vpayit data · Last year this week: cash was £9,200
+            {liveBrief
+              ? 'Generated at 08:00 · Based on your Vpayit data'
+              : 'Subscribe to the morning brief at vpayit.co.uk/morning-brief to receive your daily summary'}
           </p>
         </div>
 
@@ -509,7 +632,10 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* ── Two-col: timeline + threads ── */}
+        {/* ── Cash flow + compliance chart ── */}
+        <CashFlowChart />
+
+        {/* ── Two-col: compliance timeline + threads ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ComplianceTimeline />
 
